@@ -70,56 +70,56 @@ function Profile() {
       <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full text-left">
         
         {/* Layout grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 md:gap-8">
           
-          {/* Sidebar Tabs */}
-          <div className="space-y-4">
+          {/* Sidebar Tabs — vertical on md+, horizontal scroll on mobile */}
+          <div className="space-y-3 md:space-y-4">
             
             {/* User card info */}
-            <div className="p-5 rounded-2xl bg-white dark:bg-dark-card border border-slate-200/50 dark:border-slate-800/60 shadow-sm text-center space-y-2">
-              <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-black text-2xl mx-auto">
+            <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-dark-card border border-slate-200/50 dark:border-slate-800/60 shadow-sm text-center space-y-2">
+              <div className="w-14 sm:w-16 h-14 sm:h-16 rounded-full bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-black text-xl sm:text-2xl mx-auto">
                 {user?.name ? user.name[0].toUpperCase() : "U"}
               </div>
               <div>
-                <h3 className="font-extrabold text-slate-850 dark:text-slate-100 text-base">{user?.name || "Customer"}</h3>
+                <h3 className="font-extrabold text-slate-850 dark:text-slate-100 text-sm sm:text-base">{user?.name || "Customer"}</h3>
                 <p className="text-xs text-slate-450 truncate">{user?.email}</p>
               </div>
             </div>
 
-            {/* Menu options buttons */}
-            <div className="flex flex-col gap-1.5">
+            {/* Menu options — horizontal scroll on mobile, vertical on md+ */}
+            <div className="flex md:flex-col gap-1.5 overflow-x-auto no-scrollbar pb-1 md:pb-0">
               <button
                 onClick={() => setActiveTab("bookings")}
-                className={`flex items-center gap-2.5 p-3 rounded-xl text-sm font-bold transition-all text-left ${
+                className={`flex items-center gap-2 sm:gap-2.5 p-2.5 sm:p-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex-shrink-0 ${
                   activeTab === "bookings"
                     ? "bg-primary text-white shadow-md shadow-primary/10"
                     : "hover:bg-slate-100 dark:hover:bg-slate-800/60 text-slate-655 dark:text-slate-400"
                 }`}
               >
-                <Ticket className="h-4.5 w-4.5" />
+                <Ticket className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
                 My Bookings
               </button>
               <button
                 onClick={() => setActiveTab("wishlist")}
-                className={`flex items-center gap-2.5 p-3 rounded-xl text-sm font-bold transition-all text-left ${
+                className={`flex items-center gap-2 sm:gap-2.5 p-2.5 sm:p-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex-shrink-0 ${
                   activeTab === "wishlist"
                     ? "bg-primary text-white shadow-md shadow-primary/10"
                     : "hover:bg-slate-100 dark:hover:bg-slate-800/60 text-slate-655 dark:text-slate-400"
                 }`}
               >
-                <Heart className="h-4.5 w-4.5" />
+                <Heart className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
                 Wishlist
               </button>
               <button
                 onClick={() => setActiveTab("settings")}
-                className={`flex items-center gap-2.5 p-3 rounded-xl text-sm font-bold transition-all text-left ${
+                className={`flex items-center gap-2 sm:gap-2.5 p-2.5 sm:p-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex-shrink-0 ${
                   activeTab === "settings"
                     ? "bg-primary text-white shadow-md shadow-primary/10"
                     : "hover:bg-slate-100 dark:hover:bg-slate-800/60 text-slate-655 dark:text-slate-400"
                 }`}
               >
-                <Settings className="h-4.5 w-4.5" />
-                Account Settings
+                <Settings className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
+                Settings
               </button>
             </div>
 

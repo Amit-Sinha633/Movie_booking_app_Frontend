@@ -180,7 +180,7 @@ function TheatreSelection() {
               return (
                 <div 
                   key={theatre._id}
-                  className="p-6 rounded-2xl bg-white dark:bg-dark-card border border-slate-200/50 dark:border-slate-800/60 shadow-xs flex flex-col lg:flex-row justify-between gap-6"
+                  className="p-4 sm:p-6 rounded-2xl bg-white dark:bg-dark-card border border-slate-200/50 dark:border-slate-800/60 shadow-xs flex flex-col lg:flex-row justify-between gap-4 sm:gap-6"
                 >
                   {/* Left Column: Theatre metadata */}
                   <div className="lg:w-1/3 text-left space-y-3">

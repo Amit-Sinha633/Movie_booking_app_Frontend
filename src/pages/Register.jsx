@@ -103,8 +103,7 @@ function Register() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
+          <div className="space-y-1">
               <label className="text-xs font-bold text-slate-450 dark:text-slate-400 uppercase tracking-wider block">
                 Password
               </label>
@@ -122,7 +121,6 @@ function Register() {
                 />
               </div>
             </div>
-          </div>
 
           <button
             type="submit"

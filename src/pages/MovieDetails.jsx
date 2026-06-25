@@ -98,11 +98,11 @@ function MovieDetails() {
       </div>
 
       {/* Movie Information & Layout */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full -mt-24 sm:-mt-40 z-20 relative pb-16">
-        <div className="flex flex-col md:flex-row gap-8 items-start">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full -mt-20 sm:-mt-32 md:-mt-40 z-20 relative pb-12 sm:pb-16">
+        <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-start">
           
           {/* Movie Poster Card (Overlaying) */}
-          <div className="w-48 sm:w-64 flex-shrink-0 mx-auto md:mx-0 rounded-2xl overflow-hidden shadow-2xl bg-slate-950 border-4 border-white dark:border-slate-900">
+          <div className="w-36 sm:w-48 md:w-64 flex-shrink-0 mx-auto md:mx-0 rounded-2xl overflow-hidden shadow-2xl bg-slate-950 border-4 border-white dark:border-slate-900">
             <img
               src={movie.posterUrl}
               alt={movie.name}
@@ -111,7 +111,7 @@ function MovieDetails() {
           </div>
 
           {/* Details Column */}
-          <div className="flex-grow space-y-6 text-left text-slate-800 dark:text-slate-100">
+          <div className="flex-grow space-y-5 md:space-y-6 text-center md:text-left text-slate-800 dark:text-slate-100">
             
             <div className="space-y-3">
               <div className="flex flex-wrap gap-2 items-center">
@@ -130,7 +130,7 @@ function MovieDetails() {
               </h1>
 
               {/* Likes/Ratings Row */}
-              <div className="flex items-center gap-4 py-2 border-b border-slate-200/50 dark:border-slate-850 max-w-md">
+              <div className="flex items-center gap-4 py-2 border-b border-slate-200/50 dark:border-slate-850 max-w-md mx-auto md:mx-0">
                 <div className="flex items-center gap-1.5">
                   <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
                   <span className="text-lg font-black">{movie.rating > 0 ? movie.rating.toFixed(1) : "N/A"}</span>
@@ -145,7 +145,7 @@ function MovieDetails() {
             </div>
 
             {/* Quick Metadata Chips */}
-            <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs font-semibold text-slate-500 dark:text-slate-450">
+            <div className="flex flex-wrap justify-center md:justify-start gap-x-6 gap-y-2 text-xs font-semibold text-slate-500 dark:text-slate-450">
               <span className="flex items-center gap-1.5">
                 <Clock className="h-4 w-4 text-slate-400" /> {movie.duration}
               </span>
@@ -158,12 +158,14 @@ function MovieDetails() {
             </div>
 
             {/* Book Tickets Action */}
+            <div className="flex justify-center md:justify-start">
             <button
               onClick={handleBookTickets}
               className="px-8 py-3.5 bg-primary hover:bg-primary/95 text-white font-extrabold text-base rounded-xl transition-all shadow-lg shadow-primary/30 transform hover:-translate-y-0.5 cursor-pointer"
             >
               Book Tickets
             </button>
+            </div>
 
             {/* About Movie */}
             <div className="space-y-2.5 pt-4 border-t border-slate-200/50 dark:border-slate-800/40">

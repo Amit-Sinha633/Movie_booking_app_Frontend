@@ -172,15 +172,15 @@ function SeatSelection() {
 
       {/* Bottom Sticky CTA Drawer */}
       {selectedSeats.length > 0 && (
-        <div className="sticky bottom-0 z-30 w-full bg-white dark:bg-dark-card border-t border-slate-200/80 dark:border-slate-850 shadow-2xl py-4 transition-all duration-300">
-          <div className="max-w-4xl mx-auto px-4 flex items-center justify-between gap-4">
+        <div className="sticky bottom-0 z-30 w-full bg-white dark:bg-dark-card border-t border-slate-200/80 dark:border-slate-850 shadow-2xl py-3 sm:py-4 transition-all duration-300">
+          <div className="max-w-4xl mx-auto px-4 flex items-center justify-between gap-3">
             
-            <div className="text-left space-y-1">
+            <div className="text-left space-y-1 min-w-0">
               <div className="flex items-center gap-1.5 text-xs text-slate-400 font-bold uppercase tracking-wider">
-                <Armchair className="h-4 w-4 text-primary" />
-                <span>Selected {selectedSeats.length} {selectedSeats.length === 1 ? "seat" : "seats"}</span>
+                <Armchair className="h-4 w-4 text-primary flex-shrink-0" />
+                <span>{selectedSeats.length} {selectedSeats.length === 1 ? "seat" : "seats"} selected</span>
               </div>
-              <p className="text-sm font-black text-slate-850 dark:text-slate-100 flex flex-wrap gap-1 max-w-[200px] sm:max-w-md">
+              <p className="text-sm font-black text-slate-850 dark:text-slate-100 flex flex-wrap gap-1 max-w-[150px] sm:max-w-xs md:max-w-sm">
                 {selectedSeats.map(seatId => (
                   <span key={seatId} className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800/60 text-xs border border-slate-200/20">
                     {seatId}
@@ -189,19 +189,19 @@ function SeatSelection() {
               </p>
             </div>
 
-            <div className="flex items-center gap-6">
-              <div className="hidden sm:block text-right">
-                <p className="text-xs text-slate-400 font-bold uppercase">Subtotal</p>
-                <p className="text-xl font-black text-primary">₹{subtotal}</p>
+            <div className="flex items-center gap-3 sm:gap-6 flex-shrink-0">
+              <div className="text-right">
+                <p className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase">Subtotal</p>
+                <p className="text-lg sm:text-xl font-black text-primary">₹{subtotal}</p>
               </div>
 
               <button
                 onClick={handleContinue}
                 disabled={bookingLoading}
-                className="px-6 sm:px-8 py-3 bg-primary hover:bg-primary/95 text-white font-extrabold text-sm rounded-xl transition-all shadow-lg shadow-primary/20 hover:shadow-primary/30 flex items-center gap-1 cursor-pointer"
+                className="px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 bg-primary hover:bg-primary/95 text-white font-extrabold text-sm rounded-xl transition-all shadow-lg shadow-primary/20 hover:shadow-primary/30 flex items-center gap-1 cursor-pointer whitespace-nowrap"
               >
                 {bookingLoading ? "Reserving..." : "Pay ₹" + subtotal}
-                <ChevronRight className="h-4.5 w-4.5" />
+                <ChevronRight className="h-4 w-4" />
               </button>
             </div>
 

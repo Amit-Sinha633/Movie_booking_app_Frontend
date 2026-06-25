@@ -3,13 +3,14 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useMovies } from "../contexts/MovieContext";
 import { useTheme } from "../contexts/ThemeContext";
-import { Search, MapPin, Sun, Moon, User, ChevronDown, LogOut, ShieldAlert, BookOpen, UserCheck } from "lucide-react";
+import { Search, MapPin, Sun, Moon, User, ChevronDown, LogOut, ShieldAlert, BookOpen, UserCheck, X, Menu } from "lucide-react";
 
 function Navbar() {
   const { user, isAuthenticated, logout, isAdmin } = useAuth();
   const { searchQuery, setSearchQuery, selectedCity, setSelectedCity } = useMovies();
   const { isDark, toggleTheme } = useTheme();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleSearchChange = (e) => {
@@ -25,25 +26,25 @@ function Navbar() {
   return (
     <nav className="sticky top-0 z-40 w-full backdrop-blur-md bg-white/70 dark:bg-dark-bg/85 border-b border-slate-200/50 dark:border-slate-800/40 shadow-sm transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 gap-4">
+        <div className="flex items-center justify-between h-16 gap-3">
           
           {/* Logo */}
           <div className="flex-shrink-0 cursor-pointer" onClick={() => navigate("/")}>
             <Link to="/">
-              <span className="text-2xl font-extrabold tracking-wider text-primary flex items-center gap-1.5">
+              <span className="text-xl sm:text-2xl font-extrabold tracking-wider text-primary flex items-center gap-1.5">
                 CINE<span className="text-slate-800 dark:text-white">PASS</span>
               </span>
             </Link>
           </div>
 
-          {/* Search Box */}
+          {/* Search Box — desktop only */}
           <div className="hidden md:flex flex-grow max-w-xl relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search className="h-5 w-5 text-slate-400" />
             </div>
             <input
               type="text"
-              placeholder="Search for Movies, Events, Plays, Sports and Activities"
+              placeholder="Search for Movies, Events, Plays, Sports..."
               value={searchQuery}
               onChange={handleSearchChange}
               className="block w-full pl-10 pr-3 py-2 border border-slate-300 dark:border-slate-700/80 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm transition-all duration-200"
@@ -51,15 +52,24 @@ function Navbar() {
           </div>
 
           {/* Right Section */}
-          <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3">
+
+            {/* Mobile Search Toggle */}
+            <button
+              onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
+              className="md:hidden p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors"
+              aria-label="Toggle search"
+            >
+              {mobileSearchOpen ? <X className="h-5 w-5" /> : <Search className="h-5 w-5" />}
+            </button>
             
             {/* City Selector */}
-            <div className="relative flex items-center text-slate-700 dark:text-slate-300 text-sm font-medium">
-              <MapPin className="h-4 w-4 text-primary mr-1" />
+            <div className="relative hidden sm:flex items-center text-slate-700 dark:text-slate-300 text-sm font-medium">
+              <MapPin className="h-4 w-4 text-primary mr-1 flex-shrink-0" />
               <select
                 value={selectedCity}
                 onChange={(e) => setSelectedCity(e.target.value)}
-                className="bg-transparent border-none pr-6 pl-1 py-1 cursor-pointer focus:ring-0 focus:outline-none text-slate-700 dark:text-slate-300 font-semibold text-sm appearance-none"
+                className="bg-transparent border-none pr-6 pl-1 py-1 cursor-pointer focus:ring-0 focus:outline-none text-slate-700 dark:text-slate-300 font-semibold text-sm appearance-none max-w-[90px]"
               >
                 {cities.map((city) => (
                   <option key={city} value={city} className="dark:bg-dark-card dark:text-white bg-white text-slate-900">
@@ -86,12 +96,12 @@ function Navbar() {
               <div className="relative">
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="flex items-center gap-1.5 py-1.5 px-3 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 bg-slate-100/50 dark:bg-slate-900/60 text-slate-700 dark:text-slate-200 transition-colors duration-200"
+                  className="flex items-center gap-1.5 py-1.5 px-2 sm:px-3 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 bg-slate-100/50 dark:bg-slate-900/60 text-slate-700 dark:text-slate-200 transition-colors duration-200"
                 >
                   <div className="w-7 h-7 rounded-full bg-primary/25 border border-primary/40 text-primary flex items-center justify-center font-bold text-sm">
                     {user?.name ? user.name[0].toUpperCase() : "U"}
                   </div>
-                  <span className="hidden sm:inline text-sm font-semibold max-w-[100px] truncate">
+                  <span className="hidden sm:inline text-sm font-semibold max-w-[80px] truncate">
                     {user?.name?.split(" ")[0]}
                   </span>
                   <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform ${dropdownOpen ? "rotate-180" : ""}`} />
@@ -146,7 +156,7 @@ function Navbar() {
             ) : (
               <button
                 onClick={() => navigate("/login")}
-                className="bg-primary hover:bg-primary/95 text-white font-bold text-sm px-5 py-2 rounded-lg transition-all duration-200 shadow-md shadow-primary/20"
+                className="bg-primary hover:bg-primary/95 text-white font-bold text-xs sm:text-sm px-3 sm:px-5 py-2 rounded-lg transition-all duration-200 shadow-md shadow-primary/20 whitespace-nowrap"
               >
                 Sign In
               </button>
@@ -155,21 +165,55 @@ function Navbar() {
         </div>
       </div>
 
+      {/* Mobile Search Bar — slides in below navbar */}
+      {mobileSearchOpen && (
+        <div className="md:hidden px-4 pb-3 bg-white/95 dark:bg-dark-bg/95 border-b border-slate-200/50 dark:border-slate-800/40">
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-4 w-4 text-slate-400" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search for Movies, Events..."
+              value={searchQuery}
+              onChange={handleSearchChange}
+              autoFocus
+              className="block w-full pl-9 pr-3 py-2.5 border border-slate-300 dark:border-slate-700/80 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm transition-all"
+            />
+          </div>
+          {/* Mobile city selector */}
+          <div className="flex items-center mt-2 text-slate-700 dark:text-slate-300 text-sm font-medium">
+            <MapPin className="h-4 w-4 text-primary mr-1 flex-shrink-0" />
+            <select
+              value={selectedCity}
+              onChange={(e) => setSelectedCity(e.target.value)}
+              className="bg-transparent border-none py-1 cursor-pointer focus:ring-0 focus:outline-none text-slate-700 dark:text-slate-300 font-semibold text-sm"
+            >
+              {cities.map((city) => (
+                <option key={city} value={city} className="dark:bg-dark-card dark:text-white bg-white text-slate-900">
+                  {city}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
+
       {/* Sub menu bar */}
       <div className="bg-slate-100 dark:bg-slate-950/80 border-b border-slate-200/50 dark:border-slate-900/60 text-xs sm:text-sm text-slate-600 dark:text-slate-400 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between overflow-x-auto no-scrollbar gap-4">
-          <div className="flex items-center gap-6 font-medium flex-shrink-0">
+          <div className="flex items-center gap-4 sm:gap-6 font-medium flex-shrink-0">
             <Link to="/" className="hover:text-primary transition-colors text-slate-800 dark:text-slate-300 font-semibold">Movies</Link>
             <span className="cursor-pointer hover:text-primary transition-colors">Stream</span>
             <span className="cursor-pointer hover:text-primary transition-colors">Events</span>
-            <span className="cursor-pointer hover:text-primary transition-colors">Plays</span>
-            <span className="cursor-pointer hover:text-primary transition-colors">Sports</span>
+            <span className="cursor-pointer hover:text-primary transition-colors hidden xs:inline">Plays</span>
+            <span className="cursor-pointer hover:text-primary transition-colors hidden sm:inline">Sports</span>
             <span className="cursor-pointer hover:text-primary transition-colors font-semibold text-rose-500 flex items-center gap-1">
               Offers
             </span>
           </div>
 
-          <div className="flex items-center gap-5 text-xs text-slate-500 dark:text-slate-400 flex-shrink-0">
+          <div className="hidden sm:flex items-center gap-5 text-xs text-slate-500 dark:text-slate-400 flex-shrink-0">
             <span className="cursor-pointer hover:text-primary transition-colors">ListYourShow</span>
             <span className="cursor-pointer hover:text-primary transition-colors">Corporates</span>
             <span className="cursor-pointer hover:text-primary transition-colors">Gift Cards</span>

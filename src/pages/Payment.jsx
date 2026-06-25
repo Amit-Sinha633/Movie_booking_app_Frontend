@@ -99,101 +99,18 @@ function Payment() {
             <p className="text-sm text-slate-400">Do not refresh this page or click back button.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="flex flex-col lg:grid lg:grid-cols-3 gap-6 sm:gap-8">
             
-            {/* Left Column: Payment Methods Selection */}
-            <div className="lg:col-span-2 space-y-6">
-              <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-                Select Payment Method
-              </h1>
-
-              <div className="rounded-2xl bg-white dark:bg-dark-card border border-slate-200/50 dark:border-slate-800/60 shadow-md divide-y divide-slate-100 dark:divide-slate-800">
-                
-                {/* UPI Option */}
-                <label className={`flex items-center gap-4 p-5 cursor-pointer transition-colors ${selectedMethod === "upi" ? "bg-primary/5 dark:bg-primary/5" : "hover:bg-slate-50 dark:hover:bg-slate-800/40"}`}>
-                  <input
-                    type="radio"
-                    name="payment"
-                    checked={selectedMethod === "upi"}
-                    onChange={() => setSelectedMethod("upi")}
-                    className="accent-primary h-4.5 w-4.5"
-                  />
-                  <div className="p-2.5 rounded-lg bg-rose-500/10 text-primary">
-                    <PhoneCall className="h-5 w-5" />
-                  </div>
-                  <div className="text-left">
-                    <p className="font-bold text-slate-800 dark:text-white">UPI / QR Code</p>
-                    <p className="text-xs text-slate-450 dark:text-slate-400">Pay using Google Pay, PhonePe, Paytm, or BHIM.</p>
-                  </div>
-                </label>
-
-                {/* Card Option */}
-                <label className={`flex items-center gap-4 p-5 cursor-pointer transition-colors ${selectedMethod === "card" ? "bg-primary/5 dark:bg-primary/5" : "hover:bg-slate-50 dark:hover:bg-slate-800/40"}`}>
-                  <input
-                    type="radio"
-                    name="payment"
-                    checked={selectedMethod === "card"}
-                    onChange={() => setSelectedMethod("card")}
-                    className="accent-primary h-4.5 w-4.5"
-                  />
-                  <div className="p-2.5 rounded-lg bg-blue-500/10 text-blue-600">
-                    <CreditCard className="h-5 w-5" />
-                  </div>
-                  <div className="text-left">
-                    <p className="font-bold text-slate-800 dark:text-white">Credit / Debit Cards</p>
-                    <p className="text-xs text-slate-455 dark:text-slate-400">Visa, Mastercard, RuPay, and Maestro accepted.</p>
-                  </div>
-                </label>
-
-                {/* Net Banking Option */}
-                <label className={`flex items-center gap-4 p-5 cursor-pointer transition-colors ${selectedMethod === "banking" ? "bg-primary/5 dark:bg-primary/5" : "hover:bg-slate-50 dark:hover:bg-slate-800/40"}`}>
-                  <input
-                    type="radio"
-                    name="payment"
-                    checked={selectedMethod === "banking"}
-                    onChange={() => setSelectedMethod("banking")}
-                    className="accent-primary h-4.5 w-4.5"
-                  />
-                  <div className="p-2.5 rounded-lg bg-amber-500/10 text-amber-500">
-                    <Landmark className="h-5 w-5" />
-                  </div>
-                  <div className="text-left">
-                    <p className="font-bold text-slate-800 dark:text-white">Net Banking</p>
-                    <p className="text-xs text-slate-455 dark:text-slate-400">Secure direct transfer from major national banks.</p>
-                  </div>
-                </label>
-
-                {/* Wallet Option */}
-                <label className={`flex items-center gap-4 p-5 cursor-pointer transition-colors ${selectedMethod === "wallet" ? "bg-primary/5 dark:bg-primary/5" : "hover:bg-slate-50 dark:hover:bg-slate-800/40"}`}>
-                  <input
-                    type="radio"
-                    name="payment"
-                    checked={selectedMethod === "wallet"}
-                    onChange={() => setSelectedMethod("wallet")}
-                    className="accent-primary h-4.5 w-4.5"
-                  />
-                  <div className="p-2.5 rounded-lg bg-emerald-500/10 text-emerald-500">
-                    <Wallet className="h-5 w-5" />
-                  </div>
-                  <div className="text-left">
-                    <p className="font-bold text-slate-800 dark:text-white">Mobile Wallets</p>
-                    <p className="text-xs text-slate-455 dark:text-slate-400">Amazon Pay, Mobikwik, PhonePe Wallet.</p>
-                  </div>
-                </label>
-
-              </div>
-            </div>
-
-            {/* Right Column: Checkout Invoice Summary Card */}
-            <div className="space-y-6">
-              <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+            {/* Right Column: Checkout Invoice Summary Card — shown first on mobile */}
+            <div className="space-y-4 lg:order-2">
+              <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
                 Order Summary
               </h2>
 
-              <div className="rounded-2xl bg-white dark:bg-dark-card border border-slate-200/50 dark:border-slate-800/60 p-6 shadow-md space-y-6 text-sm">
+              <div className="rounded-2xl bg-white dark:bg-dark-card border border-slate-200/50 dark:border-slate-800/60 p-4 sm:p-6 shadow-md space-y-4 sm:space-y-6 text-sm">
                 
                 <div>
-                  <h3 className="font-bold text-slate-850 dark:text-slate-100 text-lg line-clamp-1">{booking.movieName || "Movie"}</h3>
+                  <h3 className="font-bold text-slate-850 dark:text-slate-100 text-base sm:text-lg line-clamp-1">{booking.movieName || "Movie"}</h3>
                   <p className="text-slate-400 text-xs mt-0.5">{booking.theatreName || "Theatre"}</p>
                   <p className="text-slate-550 dark:text-slate-350 text-xs font-semibold mt-1">Showtime: {booking.timing}</p>
                 </div>
@@ -214,11 +131,94 @@ function Payment() {
                 {/* Pay button */}
                 <button
                   onClick={handlePayment}
-                  className="w-full py-3.5 bg-primary hover:bg-primary/95 text-white font-extrabold text-sm rounded-xl transition-all shadow-lg shadow-primary/25 flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full py-3 sm:py-3.5 bg-primary hover:bg-primary/95 text-white font-extrabold text-sm rounded-xl transition-all shadow-lg shadow-primary/25 flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <ShieldCheck className="h-5 w-5" />
                   Pay ₹{invoiceAmount} Now
                 </button>
+              </div>
+            </div>
+
+            {/* Left Column: Payment Methods Selection */}
+            <div className="lg:col-span-2 space-y-4 sm:space-y-6 lg:order-1">
+              <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                Select Payment Method
+              </h1>
+
+              <div className="rounded-2xl bg-white dark:bg-dark-card border border-slate-200/50 dark:border-slate-800/60 shadow-md divide-y divide-slate-100 dark:divide-slate-800">
+                
+                {/* UPI Option */}
+                <label className={`flex items-center gap-3 sm:gap-4 p-4 sm:p-5 cursor-pointer transition-colors ${selectedMethod === "upi" ? "bg-primary/5 dark:bg-primary/5" : "hover:bg-slate-50 dark:hover:bg-slate-800/40"}`}>
+                  <input
+                    type="radio"
+                    name="payment"
+                    checked={selectedMethod === "upi"}
+                    onChange={() => setSelectedMethod("upi")}
+                    className="accent-primary h-4 w-4"
+                  />
+                  <div className="p-2 sm:p-2.5 rounded-lg bg-rose-500/10 text-primary flex-shrink-0">
+                    <PhoneCall className="h-4 sm:h-5 w-4 sm:w-5" />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-bold text-slate-800 dark:text-white text-sm sm:text-base">UPI / QR Code</p>
+                    <p className="text-xs text-slate-450 dark:text-slate-400">Pay using Google Pay, PhonePe, Paytm, or BHIM.</p>
+                  </div>
+                </label>
+
+                {/* Card Option */}
+                <label className={`flex items-center gap-3 sm:gap-4 p-4 sm:p-5 cursor-pointer transition-colors ${selectedMethod === "card" ? "bg-primary/5 dark:bg-primary/5" : "hover:bg-slate-50 dark:hover:bg-slate-800/40"}`}>
+                  <input
+                    type="radio"
+                    name="payment"
+                    checked={selectedMethod === "card"}
+                    onChange={() => setSelectedMethod("card")}
+                    className="accent-primary h-4 w-4"
+                  />
+                  <div className="p-2 sm:p-2.5 rounded-lg bg-blue-500/10 text-blue-600 flex-shrink-0">
+                    <CreditCard className="h-4 sm:h-5 w-4 sm:w-5" />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-bold text-slate-800 dark:text-white text-sm sm:text-base">Credit / Debit Cards</p>
+                    <p className="text-xs text-slate-455 dark:text-slate-400">Visa, Mastercard, RuPay, and Maestro accepted.</p>
+                  </div>
+                </label>
+
+                {/* Net Banking Option */}
+                <label className={`flex items-center gap-3 sm:gap-4 p-4 sm:p-5 cursor-pointer transition-colors ${selectedMethod === "banking" ? "bg-primary/5 dark:bg-primary/5" : "hover:bg-slate-50 dark:hover:bg-slate-800/40"}`}>
+                  <input
+                    type="radio"
+                    name="payment"
+                    checked={selectedMethod === "banking"}
+                    onChange={() => setSelectedMethod("banking")}
+                    className="accent-primary h-4 w-4"
+                  />
+                  <div className="p-2 sm:p-2.5 rounded-lg bg-amber-500/10 text-amber-500 flex-shrink-0">
+                    <Landmark className="h-4 sm:h-5 w-4 sm:w-5" />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-bold text-slate-800 dark:text-white text-sm sm:text-base">Net Banking</p>
+                    <p className="text-xs text-slate-455 dark:text-slate-400">Secure direct transfer from major national banks.</p>
+                  </div>
+                </label>
+
+                {/* Wallet Option */}
+                <label className={`flex items-center gap-3 sm:gap-4 p-4 sm:p-5 cursor-pointer transition-colors ${selectedMethod === "wallet" ? "bg-primary/5 dark:bg-primary/5" : "hover:bg-slate-50 dark:hover:bg-slate-800/40"}`}>
+                  <input
+                    type="radio"
+                    name="payment"
+                    checked={selectedMethod === "wallet"}
+                    onChange={() => setSelectedMethod("wallet")}
+                    className="accent-primary h-4 w-4"
+                  />
+                  <div className="p-2 sm:p-2.5 rounded-lg bg-emerald-500/10 text-emerald-500 flex-shrink-0">
+                    <Wallet className="h-4 sm:h-5 w-4 sm:w-5" />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-bold text-slate-800 dark:text-white text-sm sm:text-base">Mobile Wallets</p>
+                    <p className="text-xs text-slate-455 dark:text-slate-400">Amazon Pay, Mobikwik, PhonePe Wallet.</p>
+                  </div>
+                </label>
+
               </div>
             </div>
 

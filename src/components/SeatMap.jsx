@@ -42,7 +42,8 @@ function SeatMap({ bookedSeats = [] }) {
       </div>
 
       {/* Seat Layout by Tiers */}
-      <div className="space-y-8 w-full max-w-3xl overflow-x-auto pb-4 no-scrollbar">
+      <div className="w-full max-w-3xl overflow-x-auto pb-4 no-scrollbar">
+        <div className="space-y-8 min-w-[520px]">
         {Object.entries(tiers).map(([tierName, tierRows]) => {
           const tierPrice = getSeatPrice(`${tierRows[0].name}-1`);
           return (
@@ -56,7 +57,7 @@ function SeatMap({ bookedSeats = [] }) {
                 </span>
               </div>
 
-              <div className="space-y-1.5 min-w-[500px]">
+              <div className="space-y-1.5">
                 {tierRows.map((row) => (
                   <div key={row.name} className="flex items-center justify-center gap-2">
                     
@@ -111,6 +112,7 @@ function SeatMap({ bookedSeats = [] }) {
             </div>
           );
         })}
+        </div>
       </div>
 
       {/* Legend Indicator */}

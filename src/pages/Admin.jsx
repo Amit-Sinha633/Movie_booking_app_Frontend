@@ -178,14 +178,14 @@ function Admin() {
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-dark-bg text-slate-800 dark:text-slate-100 transition-colors duration-300">
       <Navbar />
 
-      <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full text-left">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 w-full text-left">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
           
           {/* Admin Sidebar Navigation */}
-          <div className="space-y-4">
-            <div className="p-5 rounded-2xl bg-white dark:bg-dark-card border border-slate-200/50 dark:border-slate-800/60 shadow-sm text-center">
-              <div className="w-14 h-14 rounded-full bg-rose-500/10 text-primary flex items-center justify-center font-bold text-lg mx-auto">
-                <Shield className="h-6 w-6" />
+          <div className="space-y-3 lg:space-y-4">
+            <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-dark-card border border-slate-200/50 dark:border-slate-800/60 shadow-sm text-center">
+              <div className="w-12 sm:w-14 h-12 sm:h-14 rounded-full bg-rose-500/10 text-primary flex items-center justify-center font-bold text-lg mx-auto">
+                <Shield className="h-5 sm:h-6 w-5 sm:w-6" />
               </div>
               <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm mt-3">Administrator</h3>
               <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1 bg-rose-500/10 text-primary inline-block px-2 py-0.5 rounded">
@@ -193,28 +193,28 @@ function Admin() {
               </p>
             </div>
 
-            <div className="flex flex-col gap-1.5">
+            <div className="flex lg:flex-col gap-1.5 overflow-x-auto no-scrollbar pb-1 lg:pb-0">
               {[
-                { id: "dashboard", label: "Dashboard Hub", icon: Shield },
-                { id: "movies", label: "Movie Management", icon: Film },
-                { id: "theatres", label: "Theatre Settings", icon: Landmark },
-                { id: "shows", label: "Show Scheduler", icon: Ticket },
-                { id: "bookings", label: "Booking History", icon: Ticket },
-                { id: "users", label: "System Users", icon: Users }
+                { id: "dashboard", label: "Dashboard", icon: Shield },
+                { id: "movies", label: "Movies", icon: Film },
+                { id: "theatres", label: "Theatres", icon: Landmark },
+                { id: "shows", label: "Shows", icon: Ticket },
+                { id: "bookings", label: "Bookings", icon: Ticket },
+                { id: "users", label: "Users", icon: Users }
               ].map((tab) => {
                 const Icon = tab.icon;
                 return (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-2.5 p-3 rounded-xl text-xs sm:text-sm font-bold transition-all text-left ${
+                    className={`flex items-center gap-2 p-2.5 lg:p-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex-shrink-0 ${
                       activeTab === tab.id
                         ? "bg-primary text-white shadow-md shadow-primary/10"
                         : "hover:bg-slate-100 dark:hover:bg-slate-800/60 text-slate-655 dark:text-slate-400"
                     }`}
                   >
-                    <Icon className="h-4.5 w-4.5" />
-                    {tab.label}
+                    <Icon className="h-4 w-4 flex-shrink-0" />
+                    <span className="whitespace-nowrap">{tab.label}</span>
                   </button>
                 );
               })}
