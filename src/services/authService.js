@@ -1,60 +1,53 @@
 import axiosInstance from "../api/axios";
 
 export const authService = {
+  /**
+   * POST /mba/api/v1/auth/signUp
+   * Body: { name, email, password, userRole? }
+   * The backend sets httpOnly cookies (accessToken, refreshToken) on success.
+   */
   async signUp(userData) {
-    try {
-      // Backend expects: name, email, password, and optional userRole/userStatus
-      const response = await axiosInstance.post("/mba/api/v1/auth/signUp", userData);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await axiosInstance.post("/mba/api/v1/auth/signUp", userData);
+    return response.data;
   },
 
+  /**
+   * POST /mba/api/v1/auth/signIn
+   * Body: { email, password }
+   * On success the backend sets httpOnly cookies automatically.
+   * We store only the user object (no token) in localStorage for UI hydration.
+   */
   async signIn(credentials) {
-    try {
-      // Backend expects: email, password
-      const response = await axiosInstance.post("/mba/api/v1/auth/signIn", credentials);
-      
-      // The backend returns successResponse with cookie but since we're using REST frontend, 
-      // let's grab the token from headers or response data if present.
-      // Wait, in auth.controller.js line 66, it returns successResponse with data = existingUser.
-      // Let's check how the cookie is handled. If it's httpOnly cookie, the browser handles it automatically.
-      // However, we'll store user data in LocalStorage. If the backend passes the token in data or if we mock it,
-      // let's save the accessToken.
-      const userData = response.data?.data || response.data;
-      
-      // Let's check if the response includes a token (if not, we can generate a mock token for frontend state keeping)
-      const token = response.data?.accessToken || userData?.token || "mock-jwt-token-" + Math.random().toString(36).substr(2);
-      
-      localStorage.setItem("accessToken", token);
-      localStorage.setItem("user", JSON.stringify(userData));
-      
-      return { user: userData, token };
-    } catch (error) {
-      console.log(error)
-      throw error;
-    }
+    const response = await axiosInstance.post("/mba/api/v1/auth/signIn", credentials);
+    const userData = response.data?.data || response.data;
+
+    // Persist user info for UI (e.g. name, role) — NOT the token.
+    // The actual JWT is in an httpOnly cookie managed by the browser.
+    localStorage.setItem("user", JSON.stringify(userData));
+
+    return { user: userData };
   },
 
+  /**
+   * POST /mba/api/v1/auth/signOut  (requires verifyJwt — cookie sent automatically)
+   * Clears the cookie on the server side and removes user from localStorage.
+   */
   async signOut() {
     try {
       await axiosInstance.post("/mba/api/v1/auth/signOut");
     } catch (error) {
-      console.warn("SignOut request failed on server, clearing client storage anyway", error);
+      console.warn("SignOut server request failed, clearing client state anyway.", error);
     } finally {
-      localStorage.removeItem("accessToken");
       localStorage.removeItem("user");
     }
   },
 
+  /**
+   * PATCH /mba/api/v1/auth/resetPassword  (requires verifyJwt)
+   * Body: { oldPassword, newPassword }
+   */
   async resetPassword(passwords) {
-    try {
-      // Backend expects: oldPassword, newPassword
-      const response = await axiosInstance.patch("/mba/api/v1/auth/resetPassword", passwords);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  }
+    const response = await axiosInstance.patch("/mba/api/v1/auth/resetPassword", passwords);
+    return response.data;
+  },
 };

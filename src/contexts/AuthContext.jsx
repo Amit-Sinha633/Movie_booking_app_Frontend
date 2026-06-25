@@ -9,15 +9,17 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // On mount, restore user from localStorage if a prior session existed.
+    // The actual JWT is in an httpOnly cookie — the browser sends it automatically.
     const initAuth = () => {
       try {
         const storedUser = localStorage.getItem("user");
-        const token = localStorage.getItem("accessToken");
-        if (storedUser && token) {
+        if (storedUser) {
           setUser(JSON.parse(storedUser));
         }
       } catch (err) {
         console.error("Error restoring auth state", err);
+        localStorage.removeItem("user");
       } finally {
         setLoading(false);
       }
@@ -33,7 +35,8 @@ export const AuthProvider = ({ children }) => {
       toast.success("Welcome back!");
       return data.user;
     } catch (error) {
-      const errMsg = error.err || error.message || "Failed to sign in";
+      const errMsg =
+        error?.err || error?.message || "Failed to sign in. Please check your credentials.";
       toast.error(errMsg);
       throw error;
     } finally {
@@ -48,7 +51,7 @@ export const AuthProvider = ({ children }) => {
       toast.success("Account created successfully! Please Sign In.");
       return response;
     } catch (error) {
-      const errMsg = error.err || error.message || "Registration failed";
+      const errMsg = error?.err || error?.msg || error?.message || "Registration failed";
       toast.error(errMsg);
       throw error;
     } finally {
@@ -59,10 +62,11 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await authService.signOut();
+    } catch (error) {
+      // Even if the server call fails, clear the local state
+    } finally {
       setUser(null);
       toast.success("Signed out successfully.");
-    } catch (error) {
-      setUser(null);
     }
   };
 
@@ -73,7 +77,8 @@ export const AuthProvider = ({ children }) => {
 
   const isAuthenticated = !!user;
   const isAdmin = user?.userRole === "ADMIN";
-  const isClient = user?.userRole === "CLIENT" || user?.userRole === "ADMIN"; // client or admin both have editing access in some fields
+  // CLIENT and ADMIN both have write access to movies/theatres/shows
+  const isClient = user?.userRole === "CLIENT" || user?.userRole === "ADMIN";
 
   const value = {
     user,
@@ -84,7 +89,7 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
-    updateProfile
+    updateProfile,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

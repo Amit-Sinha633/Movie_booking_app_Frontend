@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import { authService } from "../services/authService";
 import { bookingService } from "../services/bookingService";
 import { movieService } from "../services/movieService";
 import Navbar from "../components/Navbar";
@@ -51,16 +52,21 @@ function Profile() {
     }, 800);
   };
 
-  const handleUpdatePassword = (e) => {
+  const handleUpdatePassword = async (e) => {
     e.preventDefault();
     if (!oldPassword || !newPassword) return;
     setSavingSettings(true);
-    setTimeout(() => {
-      toast.success("Password reset successfully!");
+    try {
+      await authService.resetPassword({ oldPassword, newPassword });
+      toast.success("Password updated successfully!");
       setOldPassword("");
       setNewPassword("");
+    } catch (error) {
+      const errMsg = error?.err || error?.message || "Failed to update password. Check your current password.";
+      toast.error(errMsg);
+    } finally {
       setSavingSettings(false);
-    }, 1000);
+    }
   };
 
   return (

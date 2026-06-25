@@ -1,6 +1,6 @@
 import axiosInstance from "../api/axios";
 
-// Mock Theatres data for fallback
+// Mock Theatres data for fallback when backend is unavailable
 const MOCK_THEATRES = [
   {
     _id: "t1",
@@ -55,53 +55,58 @@ const MOCK_THEATRES = [
 ];
 
 export const theatreService = {
-  // Get all theatres
+  // GET /mba/theatre/api/v1/theatres?city=...&movieId=...
   async getTheatres(city = "") {
     try {
-      const response = await axiosInstance.get("/mba/theatre/api/v1/theatres");
+      const params = {};
+      if (city) params.city = city;
+
+      const response = await axiosInstance.get("/mba/theatre/api/v1/theatres", { params });
       const theatres = response.data?.data || response.data || [];
-      
+
       let list = theatres.length > 0 ? theatres : MOCK_THEATRES;
-      
-      // Inject standard facilities into backend items if missing
-      list = list.map(t => ({
+
+      // Inject facilities if missing (backend doesn't have this field)
+      list = list.map((t) => ({
         ...t,
-        facilities: t.facilities || ["Food & Beverage", "E-Ticket", "Dolby Sound"]
+        facilities: t.facilities || ["Food & Beverage", "E-Ticket", "Dolby Sound"],
       }));
-      
+
       if (city) {
-        return list.filter(t => t.city.toLowerCase() === city.toLowerCase());
+        return list.filter((t) => t.city?.toLowerCase() === city.toLowerCase());
       }
       return list;
     } catch (error) {
       console.warn("Failed to get theatres from backend, fallback to mock", error);
       if (city) {
-        return MOCK_THEATRES.filter(t => t.city.toLowerCase() === city.toLowerCase());
+        return MOCK_THEATRES.filter((t) => t.city.toLowerCase() === city.toLowerCase());
       }
       return MOCK_THEATRES;
     }
   },
 
-  // Get single theatre
+  // GET /mba/theatre/api/v1/theatre/:theatreId
   async getTheatre(theatreId) {
     try {
-      if (theatreId.startsWith("t")) {
-        const mock = MOCK_THEATRES.find(t => t._id === theatreId);
+      // Return mock immediately for mock IDs to avoid unnecessary API call
+      if (theatreId && theatreId.startsWith("t") && theatreId.length <= 2) {
+        const mock = MOCK_THEATRES.find((t) => t._id === theatreId);
         if (mock) return mock;
       }
       const response = await axiosInstance.get(`/mba/theatre/api/v1/theatre/${theatreId}`);
       const t = response.data?.data || response.data;
       return {
         ...t,
-        facilities: t.facilities || ["Food & Beverage", "E-Ticket", "Dolby Sound"]
+        facilities: t.facilities || ["Food & Beverage", "E-Ticket", "Dolby Sound"],
       };
     } catch (error) {
-      const mock = MOCK_THEATRES.find(t => t._id === theatreId) || MOCK_THEATRES[0];
+      const mock = MOCK_THEATRES.find((t) => t._id === theatreId) || MOCK_THEATRES[0];
       return mock;
     }
   },
 
-  // Create theatre
+  // POST /mba/theatre/api/v1/theatre  (requires ADMIN/CLIENT auth via cookie)
+  // Body: { name, description, city, pinCode, address }
   async createTheatre(theatreData) {
     try {
       const response = await axiosInstance.post("/mba/theatre/api/v1/theatre", theatreData);
@@ -110,24 +115,28 @@ export const theatreService = {
       const newMock = {
         _id: "t" + Date.now(),
         movies: [],
-        ...theatreData
+        facilities: ["Food & Beverage", "E-Ticket", "Dolby Sound"],
+        ...theatreData,
       };
       MOCK_THEATRES.push(newMock);
       return newMock;
     }
   },
 
-  // Update theatre
+  /**
+   * PATCH /mba/theatre/api/v1/theatre?theatreId=...  (requires ADMIN/CLIENT auth)
+   * Body: fields to update (name, description, city, etc.)
+   * The controller reads theatreId from req.query, not req.body.
+   */
   async updateTheatre(theatreId, theatreData) {
     try {
-      // In routes, theatre update PUT is `/theatre` and has body
-      const response = await axiosInstance.put("/mba/theatre/api/v1/theatre", {
-        theatreId,
-        ...theatreData
-      });
+      const response = await axiosInstance.patch(
+        `/mba/theatre/api/v1/theatre?theatreId=${theatreId}`,
+        theatreData
+      );
       return response.data?.data || response.data;
     } catch (error) {
-      const idx = MOCK_THEATRES.findIndex(t => t._id === theatreId);
+      const idx = MOCK_THEATRES.findIndex((t) => t._id === theatreId);
       if (idx !== -1) {
         MOCK_THEATRES[idx] = { ...MOCK_THEATRES[idx], ...theatreData };
         return MOCK_THEATRES[idx];
@@ -136,13 +145,13 @@ export const theatreService = {
     }
   },
 
-  // Delete theatre
+  // DELETE /mba/theatre/api/v1/theatre/:theatreId  (requires ADMIN/CLIENT auth)
   async deleteTheatre(theatreId) {
     try {
       const response = await axiosInstance.delete(`/mba/theatre/api/v1/theatre/${theatreId}`);
       return response.data;
     } catch (error) {
-      const idx = MOCK_THEATRES.findIndex(t => t._id === theatreId);
+      const idx = MOCK_THEATRES.findIndex((t) => t._id === theatreId);
       if (idx !== -1) {
         MOCK_THEATRES.splice(idx, 1);
         return { success: true, message: "Mock deleted" };
@@ -151,15 +160,21 @@ export const theatreService = {
     }
   },
 
-  // Link movie to theatre
+  /**
+   * PATCH /mba/theatre/api/v1/:theatreId/movies  (requires ADMIN/CLIENT auth)
+   * Body: { movies: [movieId, ...], insert: true | false }
+   *   insert: true  → adds the movies ($addToSet)
+   *   insert: false → removes them ($pull)
+   */
   async addMovieToTheatre(theatreId, movieId) {
     try {
-      const response = await axiosInstance.patch(`/mba/theatre/api/v1/${theatreId}/movies`, {
-        movieId
-      });
+      const response = await axiosInstance.patch(
+        `/mba/theatre/api/v1/${theatreId}/movies`,
+        { movies: [movieId], insert: true }
+      );
       return response.data;
     } catch (error) {
-      const t = MOCK_THEATRES.find(t => t._id === theatreId);
+      const t = MOCK_THEATRES.find((t) => t._id === theatreId);
       if (t) {
         if (!t.movies.includes(movieId)) {
           t.movies.push(movieId);
@@ -170,14 +185,48 @@ export const theatreService = {
     }
   },
 
-  // Get movies in theatre
+  /**
+   * PATCH /mba/theatre/api/v1/:theatreId/movies  (requires ADMIN/CLIENT auth)
+   * Body: { movies: [movieId, ...], insert: false } → removes movie from theatre
+   */
+  async removeMovieFromTheatre(theatreId, movieId) {
+    try {
+      const response = await axiosInstance.patch(
+        `/mba/theatre/api/v1/${theatreId}/movies`,
+        { movies: [movieId], insert: false }
+      );
+      return response.data;
+    } catch (error) {
+      const t = MOCK_THEATRES.find((t) => t._id === theatreId);
+      if (t) {
+        t.movies = t.movies.filter((m) => m !== movieId);
+        return { success: true, message: "Removed mock movie" };
+      }
+      throw error;
+    }
+  },
+
+  // GET /mba/theatre/api/v1/:theatreId/movies — returns theatre with populated movies array
   async getMoviesInTheatre(theatreId) {
     try {
       const response = await axiosInstance.get(`/mba/theatre/api/v1/${theatreId}/movies`);
       return response.data?.data || response.data || [];
     } catch (error) {
-      const t = MOCK_THEATRES.find(t => t._id === theatreId);
+      const t = MOCK_THEATRES.find((t) => t._id === theatreId);
       return t ? t.movies : [];
     }
-  }
+  },
+
+  // GET /mba/theatre/api/v1/theatres/:theatreId/movies/:movieId — check if movie is in theatre
+  async checkMovieInTheatre(theatreId, movieId) {
+    try {
+      const response = await axiosInstance.get(
+        `/mba/theatre/api/v1/theatres/${theatreId}/movies/${movieId}`
+      );
+      return response.data?.data || response.data;
+    } catch (error) {
+      const t = MOCK_THEATRES.find((t) => t._id === theatreId);
+      return t?.movies.includes(movieId) ? t : null;
+    }
+  },
 };
