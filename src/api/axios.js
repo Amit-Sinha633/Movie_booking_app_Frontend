@@ -1,14 +1,15 @@
 import axios from "axios";
 
-// With the Vite dev-server proxy configured (vite.config.js), all /mba/* requests
-// are automatically forwarded from localhost:5173 → localhost:1000 (backend PORT in .env).
-// Using an empty baseURL (same-origin) means the browser sends cookies automatically
-// because the origin matches — no CORS issue and no need to worry about withCredentials + CORS.
+// VITE_API_URL is set to "" in .env.development → the Vite dev-server proxy
+// intercepts every /mba/* request and tunnels it to localhost:1000 (backend),
+// so local development works exactly as before.
 //
-// In production, replace the proxy with your deployed backend URL.
+// In production (Netlify), VITE_API_URL is baked into the bundle from
+// .env.production = "https://movie-booking-app-topaz-eight.vercel.app"
+// so all API calls are sent directly to the deployed Vercel backend.
 const axiosInstance = axios.create({
-  baseURL: "",            // same-origin via Vite proxy in dev
-  withCredentials: true,  // always send cookies (httpOnly JWT)
+  baseURL: import.meta.env.VITE_API_URL || "",  // "" in dev (proxy), Vercel URL in prod
+  withCredentials: true,  // always send cookies (httpOnly JWT) — required for cross-origin auth
   headers: {
     "Content-Type": "application/json",
   },
