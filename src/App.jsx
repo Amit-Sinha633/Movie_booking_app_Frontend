@@ -20,7 +20,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
-
+import ClientDashboard from "./pages/ClientDashboard"
 // Protective Wrappers
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -74,6 +74,14 @@ function App() {
                   element={
                     <ProtectedRoute adminOnly>
                       <Admin />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/client" 
+                  element={
+                    <ProtectedRoute>
+                      <ClientDashboard />
                     </ProtectedRoute>
                   } 
                 />

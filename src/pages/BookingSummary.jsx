@@ -50,9 +50,7 @@ function BookingSummary() {
 
   // Calculate pricing from loaded booking details (protects state from refreshes)
   const ticketSubtotal = booking.totalCosts || 0;
-  const convenienceFee = Math.round(ticketSubtotal * 0.10);
-  const gst = Math.round(convenienceFee * 0.18);
-  const totalBill = ticketSubtotal + convenienceFee + gst;
+  const totalBill = ticketSubtotal;
 
   const handleProceedToPayment = () => {
     // Navigate to payment page with matching total bill calculation
@@ -115,19 +113,7 @@ function BookingSummary() {
                     <span className="font-bold text-slate-800 dark:text-white">₹{ticketSubtotal}</span>
                   </div>
 
-                  {/* Convenience Fee */}
-                  <div className="flex justify-between font-medium text-slate-655 dark:text-slate-400">
-                    <span className="flex items-center gap-1">
-                      Convenience Fee (10%) <Percent className="h-3 w-3 text-slate-400" />
-                    </span>
-                    <span className="font-bold">₹{convenienceFee}</span>
-                  </div>
 
-                  {/* GST */}
-                  <div className="flex justify-between font-medium text-slate-655 dark:text-slate-400">
-                    <span>GST (18% of fee)</span>
-                    <span className="font-bold">₹{gst}</span>
-                  </div>
 
                   <div className="h-px bg-slate-100 dark:bg-slate-800 my-2" />
 

@@ -6,7 +6,7 @@ import { useTheme } from "../contexts/ThemeContext";
 import { Search, MapPin, Sun, Moon, User, ChevronDown, LogOut, ShieldAlert, BookOpen, UserCheck, X, Menu } from "lucide-react";
 
 function Navbar() {
-  const { user, isAuthenticated, logout, isAdmin } = useAuth();
+  const { user, isAuthenticated, logout, isAdmin, isClient } = useAuth();
   const { searchQuery, setSearchQuery, selectedCity, setSelectedCity } = useMovies();
   const { isDark, toggleTheme } = useTheme();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -21,7 +21,7 @@ function Navbar() {
     }
   };
 
-  const cities = ["Kolkata", "Mumbai", "Delhi", "Bengaluru", "Chennai"];
+  const cities = ["kolkata", "bolpur"];
 
   return (
     <nav className="sticky top-0 z-40 w-full backdrop-blur-md bg-white/70 dark:bg-dark-bg/85 border-b border-slate-200/50 dark:border-slate-800/40 shadow-sm transition-all duration-300">
@@ -136,6 +136,17 @@ function Navbar() {
                         >
                           <ShieldAlert className="h-4 w-4 text-primary" />
                           Admin Dashboard
+                        </Link>
+                      )}
+
+                      {user?.userRole === "CLIENT" && (
+                        <Link
+                          to="/client"
+                          onClick={() => setDropdownOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-800/60 text-blue-500 font-semibold transition-colors"
+                        >
+                          <UserCheck className="h-4 w-4 text-blue-500" />
+                          Client Dashboard
                         </Link>
                       )}
 

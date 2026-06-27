@@ -7,43 +7,9 @@ import MovieCard from "../components/MovieCard";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { useMovies } from "../contexts/MovieContext";
 import { theatreService } from "../services/theatreService";
-import { Film, MapPin, Ticket, Award, Calendar, Sparkles } from "lucide-react";
+import { Film, MapPin, Ticket, Award, Sparkles } from "lucide-react";
 
-// Mock events for landing page richness
-const MOCK_EVENTS = [
-  {
-    id: "e1",
-    title: "Comic Con India 2026",
-    type: "Pop Culture Event",
-    image: "https://images.unsplash.com/photo-1513151233558-d860c5398176?w=400&auto=format&fit=crop&q=60",
-    date: "July 12-14",
-    price: "From ₹899"
-  },
-  {
-    id: "e2",
-    title: "A.R. Rahman Live Concert",
-    type: "Music Concert",
-    image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&auto=format&fit=crop&q=60",
-    date: "August 05",
-    price: "From ₹1500"
-  },
-  {
-    id: "e3",
-    title: "Sunburn Festival Goa",
-    type: "EDM Festival",
-    image: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&auto=format&fit=crop&q=60",
-    date: "December 27-30",
-    price: "From ₹3000"
-  },
-  {
-    id: "e4",
-    title: "Mughal-E-Azam: The Musical",
-    type: "Theatre Play",
-    image: "https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?w=400&auto=format&fit=crop&q=60",
-    date: "July 20-25",
-    price: "From ₹500"
-  }
-];
+
 
 function Home() {
   const { filteredMovies, loading, error, selectedCity } = useMovies();
@@ -153,34 +119,7 @@ function Home() {
             </div>
           )}
 
-          {/* 4. Popular Events Slider */}
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 border-t border-slate-200/40 dark:border-slate-800/30">
-            <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight mb-6 flex items-center gap-2">
-              <Calendar className="h-5.5 w-5.5 text-primary" />
-              Popular Live Events
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-              {MOCK_EVENTS.map((event) => (
-                <div key={event.id} className="group rounded-xl overflow-hidden bg-white dark:bg-dark-card border border-slate-200/50 dark:border-slate-800/60 shadow-sm hover:shadow-md transition-all duration-300">
-                  <div className="aspect-[16/10] overflow-hidden bg-slate-900">
-                    <img 
-                      src={event.image} 
-                      alt={event.title} 
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  </div>
-                  <div className="p-4 space-y-1">
-                    <span className="text-[10px] font-bold text-primary uppercase tracking-wider">{event.type}</span>
-                    <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm line-clamp-1">{event.title}</h3>
-                    <div className="flex justify-between text-xs text-slate-500 font-semibold pt-1">
-                      <span>{event.date}</span>
-                      <span className="text-slate-700 dark:text-slate-350">{event.price}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+
 
           {/* 5. Recommended Theatres Section */}
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 border-t border-slate-200/40 dark:border-slate-800/30">

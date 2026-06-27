@@ -211,7 +211,7 @@ function TheatreSelection() {
                       ))}
                     </div>
                   </div>
-
+                      
                   {/* Right Column: Showtime Slots Grid */}
                   <div className="flex-grow lg:w-2/3 space-y-4">
                     {shows.length === 0 ? (
@@ -228,20 +228,45 @@ function TheatreSelection() {
                                 {slotName}
                               </span>
                               <div className="flex flex-wrap gap-2">
-                                {slotShows.map((show) => (
+                                {slotShows.map((show) => {
+                                  const seats = show.noOfSeats ?? 0;
+                                  const isSoldOut = seats <= 0;
+                                  const isFastFilling = seats > 0 && seats < 10;
+                                  const seatColor = isSoldOut
+                                    ? "text-slate-400"
+                                    : seats > 30
+                                    ? "text-emerald-500"
+                                    : seats >= 10
+                                    ? "text-orange-400"
+                                    : "text-red-500";
+
+                                  return (
                                   <button
                                     key={show._id}
-                                    onClick={() => handleShowClick(theatre, show)}
-                                    className="px-3.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-dark-card hover:bg-primary hover:border-primary dark:hover:bg-primary dark:hover:border-primary hover:text-white text-xs font-extrabold text-slate-750 dark:text-slate-200 transition-all cursor-pointer shadow-xs transform hover:scale-[1.03]"
+                                    onClick={() => !isSoldOut && handleShowClick(theatre, show)}
+                                    disabled={isSoldOut}
+                                    className={`px-3.5 py-2 rounded-lg border text-xs font-extrabold text-left transition-all shadow-xs
+                                      ${isSoldOut
+                                        ? "border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900/40 text-slate-400 opacity-50 cursor-not-allowed"
+                                        : "border-slate-300 dark:border-slate-700 bg-white dark:bg-dark-card hover:bg-primary hover:border-primary dark:hover:bg-primary dark:hover:border-primary hover:text-white text-slate-750 dark:text-slate-200 cursor-pointer transform hover:scale-[1.03]"
+                                      }`}
                                   >
                                     <div className="text-center">
                                       <div>{show.timing}</div>
-                                      <div className="text-[9px] text-emerald-500 hover:text-white font-bold mt-0.5">
-                                        ₹{show.price}
+                                      <div className="text-[9px] text-emerald-500 font-bold mt-0.5">
+                                        ₹{show.ticketPrice ?? show.price}
+                                      </div>
+                                      <div className={`text-[9px] font-black mt-1 whitespace-nowrap ${isSoldOut ? "text-slate-400" : seatColor}`}>
+                                        {isSoldOut
+                                          ? "🚫 Sold Out"
+                                          : isFastFilling
+                                          ? `🔥 Only ${seats} Left`
+                                          : `🎟 ${seats} Seats Left`}
                                       </div>
                                     </div>
                                   </button>
-                                ))}
+                                  );
+                                })}
                               </div>
                             </div>
                           );

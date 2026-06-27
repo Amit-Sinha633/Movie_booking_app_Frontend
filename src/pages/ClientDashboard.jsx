@@ -4,24 +4,23 @@ import { movieService } from "../services/movieService";
 import { theatreService } from "../services/theatreService";
 import { showService } from "../services/showService";
 import { bookingService } from "../services/bookingService";
-import { userService } from "../services/userService";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import LoadingSpinner from "../components/LoadingSpinner";
-import { Film, Ticket, Shield, Users, Landmark, Plus, Trash2, Edit3, DollarSign } from "lucide-react";
+import { Film, Ticket, Shield, Landmark, Plus, Trash2, Edit3, DollarSign, UserCheck } from "lucide-react";
 import { toast } from "react-hot-toast";
 
-function Admin() {
-  const { user } = useAuth();
+function ClientDashboard() {
+  const { user, isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [loading, setLoading] = useState(true);
+  const [showsError, setShowsError] = useState(false);
 
   // Data lists
   const [movies, setMovies] = useState([]);
   const [theatres, setTheatres] = useState([]);
   const [shows, setShows] = useState([]);
   const [bookings, setBookings] = useState([]);
-  const [users, setUsers] = useState([]);
 
   // Modals visibility
   const [movieModal, setMovieModal] = useState(false);
@@ -29,7 +28,7 @@ function Admin() {
   const [showModal, setShowModal] = useState(false);
 
   // Edit contexts
-  const [editItem, setEditItem] = useState(null); // stores active movie/theatre/show to update
+  const [editItem, setEditItem] = useState(null);
 
   // Movie Form Fields
   const [movieForm, setMovieForm] = useState({
@@ -52,24 +51,32 @@ function Admin() {
     try {
       const ml = await movieService.getMovies();
       setMovies(ml);
-      const tl = await theatreService.getTheatres();
+      const tl = await theatreService.getMyTheatres();
       setTheatres(tl);
-      const sl = await showService.getShows();
-      setShows(sl);
-      const bl = await bookingService.getAllBookings();
+      
+      try {
+        const sl = await showService.getMyShows();
+        setShows(sl);
+        setShowsError(false);
+      } catch (err) {
+        setShowsError(true);
+        console.error("Failed to load client shows", err);
+      }
+
+      const bl = await bookingService.getMyBookings(); 
       setBookings(bl);
-      const ul = await userService.getAllUsers();
-      setUsers(ul);
     } catch (e) {
-      console.error("Failed to load admin dashboard indices", e);
+      console.error("Failed to load client dashboard indices", e);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (isAuthenticated) {
+      loadData();
+    }
+  }, [isAuthenticated]);
 
   // CRUD Movie
   const handleMovieSubmit = async (e) => {
@@ -165,23 +172,16 @@ function Admin() {
     }
   };
 
-  const handleUserUpdate = async (userId, updateData) => {
-    try {
-      await userService.updateRoleOrStatus(userId, updateData);
-      toast.success("User updated successfully!");
-      loadData();
-    } catch (err) {
-      toast.error("Failed to update user.");
-    }
-  };
+  if (!isAuthenticated) {
+    return <div className="min-h-screen flex items-center justify-center">Please log in to view your dashboard.</div>;
+  }
 
   if (loading) {
     return <LoadingSpinner fullPage />;
   }
 
-  // Dashboard Stats Calculations
-  const totalRevenue = bookings
-    .filter(b => b.status === "SUCCESSFULL" || b.status === "SUCCESS" || b.status === "SUCCESSFULL")
+  const totalSpent = bookings
+    .filter(b => b.status === "SUCCESSFULL" || b.status === "SUCCESS")
     .reduce((sum, b) => sum + (b.totalCosts || 0), 0);
 
   return (
@@ -191,15 +191,15 @@ function Admin() {
       <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 w-full text-left">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
           
-          {/* Admin Sidebar Navigation */}
+          {/* Client Sidebar Navigation */}
           <div className="space-y-3 lg:space-y-4">
             <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-dark-card border border-slate-200/50 dark:border-slate-800/60 shadow-sm text-center">
-              <div className="w-12 sm:w-14 h-12 sm:h-14 rounded-full bg-rose-500/10 text-primary flex items-center justify-center font-bold text-lg mx-auto">
-                <Shield className="h-5 sm:h-6 w-5 sm:w-6" />
+              <div className="w-12 sm:w-14 h-12 sm:h-14 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center font-bold text-lg mx-auto">
+                <UserCheck className="h-5 sm:h-6 w-5 sm:w-6" />
               </div>
-              <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm mt-3">Administrator</h3>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1 bg-rose-500/10 text-primary inline-block px-2 py-0.5 rounded">
-                SYSTEM PORTAL
+              <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm mt-3">{user?.name || "Client"}</h3>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1 bg-blue-500/10 text-blue-500 inline-block px-2 py-0.5 rounded">
+                CLIENT PORTAL
               </p>
             </div>
 
@@ -207,10 +207,9 @@ function Admin() {
               {[
                 { id: "dashboard", label: "Dashboard", icon: Shield },
                 { id: "movies", label: "Movies", icon: Film },
-                { id: "theatres", label: "Theatres", icon: Landmark },
+                { id: "theatres", label: "My Theatres", icon: Landmark },
                 { id: "shows", label: "Shows", icon: Ticket },
-                { id: "bookings", label: "Bookings", icon: Ticket },
-                { id: "users", label: "Users", icon: Users }
+                { id: "bookings", label: "Bookings", icon: Ticket }
               ].map((tab) => {
                 const Icon = tab.icon;
                 return (
@@ -231,7 +230,7 @@ function Admin() {
             </div>
           </div>
 
-          {/* Admin Panels content */}
+          {/* Client Panels content */}
           <div className="lg:col-span-3">
             <div className="bg-white dark:bg-dark-card border border-slate-200/50 dark:border-slate-800/60 rounded-3xl p-6 sm:p-8 shadow-sm">
               
@@ -239,7 +238,7 @@ function Admin() {
               {activeTab === "dashboard" && (
                 <div className="space-y-6">
                   <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight border-b border-slate-100 dark:border-slate-850 pb-4">
-                    Administrative Dashboard
+                    Client Dashboard
                   </h2>
 
                   {/* Summary Cards */}
@@ -251,24 +250,42 @@ function Admin() {
                     </div>
                     <div className="p-4 bg-slate-50 dark:bg-slate-900/40 border border-slate-200/20 rounded-xl space-y-1 text-left shadow-xs">
                       <Landmark className="h-5 w-5 text-blue-500" />
-                      <p className="text-[10px] text-slate-400 font-bold uppercase">Theatres</p>
+                      <p className="text-[10px] text-slate-400 font-bold uppercase">Total Theatres Owned</p>
                       <p className="text-2xl font-black">{theatres.length}</p>
                     </div>
                     <div className="p-4 bg-slate-50 dark:bg-slate-900/40 border border-slate-200/20 rounded-xl space-y-1 text-left shadow-xs">
-                      <Users className="h-5 w-5 text-green-500" />
-                      <p className="text-[10px] text-slate-400 font-bold uppercase">Total Users</p>
-                      <p className="text-2xl font-black">{users.length}</p>
+                      <Ticket className="h-5 w-5 text-purple-500" />
+                      <p className="text-[10px] text-slate-400 font-bold uppercase">My Bookings</p>
+                      <p className="text-2xl font-black">{bookings.length}</p>
                     </div>
                     <div className="p-4 bg-slate-50 dark:bg-slate-900/40 border border-slate-200/20 rounded-xl space-y-1 text-left shadow-xs">
                       <DollarSign className="h-5 w-5 text-emerald-500" />
-                      <p className="text-[10px] text-slate-400 font-bold uppercase">Revenue (INR)</p>
-                      <p className="text-xl font-black text-emerald-500">₹{totalRevenue}</p>
+                      <p className="text-[10px] text-slate-400 font-bold uppercase">Total Spent (INR)</p>
+                      <p className="text-xl font-black text-emerald-500">₹{totalSpent}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pt-2">
+                    <div className="p-4 bg-slate-50 dark:bg-slate-900/40 border border-slate-200/20 rounded-xl space-y-1 text-left shadow-xs">
+                      <Ticket className="h-5 w-5 text-indigo-500" />
+                      <p className="text-[10px] text-slate-400 font-bold uppercase">Total Shows</p>
+                      <p className="text-2xl font-black">{shows.length}</p>
+                    </div>
+                    <div className="p-4 bg-slate-50 dark:bg-slate-900/40 border border-slate-200/20 rounded-xl space-y-1 text-left shadow-xs">
+                      <Ticket className="h-5 w-5 text-amber-500" />
+                      <p className="text-[10px] text-slate-400 font-bold uppercase">Upcoming Shows</p>
+                      <p className="text-2xl font-black">{shows.length}</p>
+                    </div>
+                    <div className="p-4 bg-slate-50 dark:bg-slate-900/40 border border-slate-200/20 rounded-xl space-y-1 text-left shadow-xs">
+                      <Landmark className="h-5 w-5 text-rose-500" />
+                      <p className="text-[10px] text-slate-400 font-bold uppercase">Active Theatres</p>
+                      <p className="text-2xl font-black">{new Set(shows.map(s => s.theatreId)).size}</p>
                     </div>
                   </div>
 
                   {/* Quick Logs */}
                   <div className="pt-4 text-xs font-semibold text-slate-450 dark:text-slate-500 text-center">
-                    CinePass Administrative System V1.0 • Connected to Local Mongo Instance
+                    CinePass Client Portal • Connected
                   </div>
                 </div>
               )}
@@ -280,19 +297,6 @@ function Admin() {
                     <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
                       Movies Catalog
                     </h2>
-                    <button
-                      onClick={() => {
-                        setEditItem(null);
-                        setMovieForm({
-                          name: "", description: "", casts: "", trailerUrl: "",
-                          language: "English", releaseDate: "", director: "", releaseStatus: "Released"
-                        });
-                        setMovieModal(true);
-                      }}
-                      className="px-3.5 py-2 bg-primary hover:bg-primary/95 text-white font-bold text-xs rounded-xl flex items-center gap-1 cursor-pointer"
-                    >
-                      <Plus className="h-4 w-4" /> Add Movie
-                    </button>
                   </div>
 
                   <div className="overflow-x-auto">
@@ -303,42 +307,15 @@ function Admin() {
                           <th className="py-3 text-left">Director</th>
                           <th className="py-3 text-left">Language</th>
                           <th className="py-3 text-left">Status</th>
-                          <th className="py-3 text-right">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 dark:divide-slate-850">
                         {movies.map(m => (
                           <tr key={m._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/10">
-                            <td className="py-4 font-bold text-slate-800 dark:text-white">{m.name}</td>
+                            <td className="py-4 font-bold text-slate-800 dark:text-white">{m.name || m.title}</td>
                             <td className="py-4">{m.director}</td>
                             <td className="py-4">{m.language}</td>
                             <td className="py-4 text-xs font-bold">{m.releaseStatus}</td>
-                            <td className="py-4 text-right flex justify-end gap-3">
-                              <button
-                                onClick={() => {
-                                  setEditItem(m);
-                                  setMovieForm({
-                                    name: m.name, description: m.description, 
-                                    casts: Array.isArray(m.casts) ? m.casts.join(",") : m.casts, 
-                                    trailerUrl: m.trailerUrl, language: m.language, 
-                                    releaseDate: m.releaseDate ? m.releaseDate.split("T")[0] : "", 
-                                    director: m.director, releaseStatus: m.releaseStatus
-                                  });
-                                  setMovieModal(true);
-                                }}
-                                className="text-slate-400 hover:text-primary transition-colors cursor-pointer"
-                                title="Edit"
-                              >
-                                <Edit3 className="h-4.5 w-4.5" />
-                              </button>
-                              <button
-                                onClick={() => handleMovieDelete(m._id)}
-                                className="text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
-                                title="Delete"
-                              >
-                                <Trash2 className="h-4.5 w-4.5" />
-                              </button>
-                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -352,7 +329,7 @@ function Admin() {
                 <div className="space-y-6">
                   <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-850 pb-4">
                     <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-                      Theatres Configuration
+                      My Theatres
                     </h2>
                     <button
                       onClick={() => {
@@ -366,51 +343,68 @@ function Admin() {
                     </button>
                   </div>
 
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-slate-655 dark:text-slate-400">
-                      <thead>
-                        <tr className="border-b border-slate-200 dark:border-slate-800 text-[10px] uppercase font-bold text-slate-400">
-                          <th className="py-3 text-left">Theatre Name</th>
-                          <th className="py-3 text-left">City</th>
-                          <th className="py-3 text-left">Address</th>
-                          <th className="py-3 text-right">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100 dark:divide-slate-850">
-                        {theatres.map(t => (
-                          <tr key={t._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/10">
-                            <td className="py-4 font-bold text-slate-800 dark:text-white">{t.name}</td>
-                            <td className="py-4 font-semibold text-primary">{t.city}</td>
-                            <td className="py-4 max-w-[200px] truncate">{t.address}</td>
-                            <td className="py-4 text-right flex justify-end gap-3">
-                              <button
-                                onClick={() => {
-                                  setEditItem(t);
-                                  setTheatreForm({
-                                    name: t.name, description: t.description || "",
-                                    city: t.city, pinCode: t.pinCode || "", address: t.address,
-                                    movies: t.movies || []
-                                  });
-                                  setTheatreModal(true);
-                                }}
-                                className="text-slate-400 hover:text-primary transition-colors cursor-pointer"
-                                title="Edit"
-                              >
-                                <Edit3 className="h-4.5 w-4.5" />
-                              </button>
-                              <button
-                                onClick={() => handleTheatreDelete(t._id)}
-                                className="text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
-                                title="Delete"
-                              >
-                                <Trash2 className="h-4.5 w-4.5" />
-                              </button>
-                            </td>
+                  {theatres.length === 0 ? (
+                    <div className="py-12 text-center flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
+                      <Landmark className="h-12 w-12 text-slate-300 dark:text-slate-600 mb-4" />
+                      <p className="text-slate-500 dark:text-slate-400 font-semibold mb-4">You have not created any theatres yet.</p>
+                      <button
+                        onClick={() => {
+                          setEditItem(null);
+                          setTheatreForm({ name: "", description: "", city: "Kolkata", pinCode: "", address: "", movies: [] });
+                          setTheatreModal(true);
+                        }}
+                        className="px-4 py-2 bg-primary hover:bg-primary/95 text-white font-bold text-sm rounded-xl flex items-center gap-2 transition-colors cursor-pointer shadow-sm"
+                      >
+                        <Plus className="h-4.5 w-4.5" /> Create Your First Theatre
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm text-slate-655 dark:text-slate-400">
+                        <thead>
+                          <tr className="border-b border-slate-200 dark:border-slate-800 text-[10px] uppercase font-bold text-slate-400">
+                            <th className="py-3 text-left">Theatre Name</th>
+                            <th className="py-3 text-left">City</th>
+                            <th className="py-3 text-left">Address</th>
+                            <th className="py-3 text-right">Actions</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-850">
+                          {theatres.map(t => (
+                            <tr key={t._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/10">
+                              <td className="py-4 font-bold text-slate-800 dark:text-white">{t.name}</td>
+                              <td className="py-4 font-semibold text-primary">{t.city}</td>
+                              <td className="py-4 max-w-[200px] truncate">{t.address}</td>
+                              <td className="py-4 text-right flex justify-end gap-3">
+                                <button
+                                  onClick={() => {
+                                    setEditItem(t);
+                                    setTheatreForm({
+                                      name: t.name, description: t.description || "",
+                                      city: t.city, pinCode: t.pinCode || "", address: t.address,
+                                      movies: t.movies || []
+                                    });
+                                    setTheatreModal(true);
+                                  }}
+                                  className="text-slate-400 hover:text-primary transition-colors cursor-pointer"
+                                  title="Edit"
+                                >
+                                  <Edit3 className="h-4.5 w-4.5" />
+                                </button>
+                                <button
+                                  onClick={() => handleTheatreDelete(t._id)}
+                                  className="text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
+                                  title="Delete"
+                                >
+                                  <Trash2 className="h-4.5 w-4.5" />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -418,9 +412,12 @@ function Admin() {
               {activeTab === "shows" && (
                 <div className="space-y-6">
                   <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-850 pb-4">
-                    <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-                      Shows Scheduler
-                    </h2>
+                    <div>
+                      <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                        My Shows
+                      </h2>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Manage all shows scheduled in your theatres</p>
+                    </div>
                     <button
                       onClick={() => {
                         setEditItem(null);
@@ -433,61 +430,99 @@ function Admin() {
                       }}
                       className="px-3.5 py-2 bg-primary hover:bg-primary/95 text-white font-bold text-xs rounded-xl flex items-center gap-1 cursor-pointer"
                     >
-                      <Plus className="h-4 w-4" /> Add Show
+                      <Plus className="h-4 w-4" /> Schedule Show
                     </button>
                   </div>
 
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-slate-655 dark:text-slate-400">
-                      <thead>
-                        <tr className="border-b border-slate-200 dark:border-slate-800 text-[10px] uppercase font-bold text-slate-400">
-                          <th className="py-3 text-left">Show Movie ID</th>
-                          <th className="py-3 text-left">Theatre ID</th>
-                          <th className="py-3 text-left">Timing</th>
-                          <th className="py-3 text-left">Price (INR)</th>
-                          <th className="py-3 text-right">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100 dark:divide-slate-850">
-                        {shows.map(s => {
-                          const movieName = movies.find(m => m._id === s.movieId)?.name || s.movieId;
-                          const theatreName = theatres.find(t => t._id === s.theatreId)?.name || s.theatreId;
-                          return (
-                            <tr key={s._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/10">
-                              <td className="py-4 font-bold text-slate-800 dark:text-white max-w-[150px] truncate">{movieName}</td>
-                              <td className="py-4 max-w-[150px] truncate">{theatreName}</td>
-                              <td className="py-4 font-semibold text-primary">{s.timing}</td>
-                              <td className="py-4 font-bold">₹{s.price}</td>
-                              <td className="py-4 text-right flex justify-end gap-3">
-                                <button
-                                  onClick={() => {
-                                    setEditItem(s);
-                                    setShowForm({
-                                      theatreId: s.theatreId,
-                                      movieId: s.movieId,
-                                      timing: s.timing, noOfSeats: s.noOfSeats, price: s.price, format: s.format || "2D"
-                                    });
-                                    setShowModal(true);
-                                  }}
-                                  className="text-slate-400 hover:text-primary transition-colors cursor-pointer"
-                                  title="Edit"
-                                >
-                                  <Edit3 className="h-4.5 w-4.5" />
-                                </button>
-                                <button
-                                  onClick={() => handleShowDelete(s._id)}
-                                  className="text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
-                                  title="Delete"
-                                >
-                                  <Trash2 className="h-4.5 w-4.5" />
-                                </button>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
+                  {showsError ? (
+                    <div className="py-12 text-center flex flex-col items-center justify-center bg-red-50 dark:bg-red-900/10 rounded-xl border border-dashed border-red-200 dark:border-red-800">
+                      <p className="text-red-500 font-semibold mb-2">Unable to load your shows.</p>
+                      <p className="text-red-400 text-sm">Please try again.</p>
+                    </div>
+                  ) : shows.length === 0 ? (
+                    <div className="py-12 text-center flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
+                      <Ticket className="h-12 w-12 text-slate-300 dark:text-slate-600 mb-4" />
+                      <p className="text-slate-500 dark:text-slate-400 font-semibold mb-4">No shows scheduled yet.</p>
+                      <button
+                        onClick={() => {
+                          setEditItem(null);
+                          setShowForm({
+                            theatreId: theatres[0]?._id || "",
+                            movieId: movies[0]?._id || "",
+                            timing: "04:30 PM", noOfSeats: 120, price: 250, format: "2D"
+                          });
+                          setShowModal(true);
+                        }}
+                        className="px-4 py-2 bg-primary hover:bg-primary/95 text-white font-bold text-sm rounded-xl flex items-center gap-2 transition-colors cursor-pointer shadow-sm"
+                      >
+                        <Plus className="h-4.5 w-4.5" /> Schedule Your First Show
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm text-slate-655 dark:text-slate-400">
+                        <thead>
+                          <tr className="border-b border-slate-200 dark:border-slate-800 text-[10px] uppercase font-bold text-slate-400">
+                            <th className="py-3 text-left">Movie Name</th>
+                            <th className="py-3 text-left">Theatre Name</th>
+                            <th className="py-3 text-left">Show Date</th>
+                            <th className="py-3 text-left">Show Time</th>
+                            <th className="py-3 text-left">Ticket Price</th>
+                            <th className="py-3 text-left">Total Seats</th>
+                            <th className="py-3 text-left">Available Seats</th>
+                            <th className="py-3 text-right">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-850">
+                          {shows.map(s => {
+                            const movieName = movies.find(m => m._id === s.movieId)?.name || movies.find(m => m._id === s.movieId)?.title || "Unknown Movie";
+                            const theatreName = theatres.find(t => t._id === s.theatreId)?.name || "Unknown Theatre";
+                            const date = s.date ? new Date(s.date).toLocaleDateString() : "TBD";
+                            const timing = Array.isArray(s.timings) ? s.timings.join(", ") : (s.timings || s.timing);
+                            
+                            return (
+                              <tr key={s._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/10">
+                                <td className="py-4 font-bold text-slate-800 dark:text-white max-w-[150px] truncate">{movieName}</td>
+                                <td className="py-4 max-w-[150px] truncate font-semibold text-primary">{theatreName}</td>
+                                <td className="py-4">{date}</td>
+                                <td className="py-4 font-semibold text-slate-700 dark:text-slate-300">{timing}</td>
+                                <td className="py-4 font-bold text-emerald-600 dark:text-emerald-400">₹{s.ticketPrice || s.price}</td>
+                                <td className="py-4">{s.noOfSeats}</td>
+                                <td className="py-4">{s.availableSeats ?? s.noOfSeats}</td>
+                                <td className="py-4 text-right flex justify-end gap-3">
+                                  <button
+                                    onClick={() => {
+                                      setEditItem(s);
+                                      setShowForm({
+                                        theatreId: s.theatreId,
+                                        movieId: s.movieId,
+                                        timing: timing,
+                                        noOfSeats: s.noOfSeats, 
+                                        price: s.ticketPrice || s.price, 
+                                        format: s.format || "2D"
+                                      });
+                                      setShowModal(true);
+                                    }}
+                                    className="text-slate-400 hover:text-primary transition-colors cursor-pointer"
+                                    title="Edit"
+                                  >
+                                    <Edit3 className="h-4.5 w-4.5" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleShowDelete(s._id)}
+                                    className="text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
+                                    title="Delete"
+                                  >
+                                    <Trash2 className="h-4.5 w-4.5" />
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -495,7 +530,7 @@ function Admin() {
               {activeTab === "bookings" && (
                 <div className="space-y-6">
                   <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight border-b border-slate-100 dark:border-slate-850 pb-4">
-                    Bookings Registry
+                    My Bookings
                   </h2>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm text-slate-655 dark:text-slate-400">
@@ -516,58 +551,6 @@ function Admin() {
                             <td className="py-4 text-xs font-bold text-primary">{b.seats?.join(", ") || b.noOfSeats}</td>
                             <td className="py-4 text-[10px] font-black uppercase text-emerald-500">{b.status}</td>
                             <td className="py-4 text-right font-bold text-slate-800 dark:text-white">₹{b.totalCosts}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-
-              {/* 6. USERS SYSTEM */}
-              {activeTab === "users" && (
-                <div className="space-y-6">
-                  <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight border-b border-slate-100 dark:border-slate-850 pb-4">
-                    System Users Registry
-                  </h2>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-slate-655 dark:text-slate-400">
-                      <thead>
-                        <tr className="border-b border-slate-200 dark:border-slate-800 text-[10px] uppercase font-bold text-slate-400">
-                          <th className="py-3 text-left">Name</th>
-                          <th className="py-3 text-left">Email Address</th>
-                          <th className="py-3 text-left">Role</th>
-                          <th className="py-3 text-right">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100 dark:divide-slate-850">
-                        {users.map(u => (
-                          <tr key={u._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/10">
-                            <td className="py-4 font-bold text-slate-800 dark:text-white">{u.name}</td>
-                            <td className="py-4 font-mono text-xs">{u.email}</td>
-                            <td className="py-4">
-                              <select 
-                                value={u.userRole}
-                                onChange={(e) => handleUserUpdate(u._id, { userRole: e.target.value })}
-                                className="px-2 py-1 rounded bg-primary/10 text-primary font-bold text-[10px] outline-none cursor-pointer"
-                              >
-                                <option value="CUSTOMER">CUSTOMER</option>
-                                <option value="ADMIN">ADMIN</option>
-                                <option value="CLIENT">CLIENT</option>
-                              </select>
-                            </td>
-                            <td className="py-4 text-right">
-                              <select 
-                                value={u.userStatus}
-                                onChange={(e) => handleUserUpdate(u._id, { userStatus: e.target.value })}
-                                className="px-2 py-1 rounded bg-emerald-500/10 text-emerald-500 font-bold text-[10px] outline-none cursor-pointer"
-                                style={{ textAlignLast: "right" }}
-                              >
-                                <option value="APPROVED">APPROVED</option>
-                                <option value="PENDING">PENDING</option>
-                                <option value="REJECTED">REJECTED</option>
-                              </select>
-                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -784,24 +767,10 @@ function Admin() {
             <form onSubmit={handleShowSubmit} className="space-y-3.5 text-xs text-left">
               
               <div className="space-y-1">
-                <label className="font-bold text-slate-400">Select Movie</label>
-                <select
-                  value={showForm.movieId}
-                  onChange={(e) => setShowForm({...showForm, movieId: e.target.value})}
-                  className="block w-full p-2 border dark:border-slate-700/80 rounded bg-slate-50 dark:bg-slate-900"
-                >
-                  <option value="">-- Choose Movie --</option>
-                  {movies.map(m => (
-                    <option key={m._id} value={m._id}>{m.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-1">
                 <label className="font-bold text-slate-400">Select Theatre</label>
                 <select
                   value={showForm.theatreId}
-                  onChange={(e) => setShowForm({...showForm, theatreId: e.target.value})}
+                  onChange={(e) => setShowForm({...showForm, theatreId: e.target.value, movieId: ""})}
                   className="block w-full p-2 border dark:border-slate-700/80 rounded bg-slate-50 dark:bg-slate-900"
                 >
                   <option value="">-- Choose Theatre --</option>
@@ -809,6 +778,37 @@ function Admin() {
                     <option key={t._id} value={t._id}>{t.name}</option>
                   ))}
                 </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-bold text-slate-400">Select Movie</label>
+                <select
+                  value={showForm.movieId}
+                  onChange={(e) => setShowForm({...showForm, movieId: e.target.value})}
+                  className="block w-full p-2 border dark:border-slate-700/80 rounded bg-slate-50 dark:bg-slate-900"
+                  disabled={!showForm.theatreId}
+                >
+                  <option value="">-- Choose Movie --</option>
+                  {(() => {
+                    const selectedTheatre = theatres.find(t => t._id === showForm.theatreId);
+                    const theatreMovieIds = selectedTheatre?.movies || [];
+                    const availableMovies = theatreMovieIds.length > 0
+                      ? movies.filter(m => theatreMovieIds.includes(m._id))
+                      : [];
+                    return availableMovies.length > 0
+                      ? availableMovies.map(m => (
+                          <option key={m._id} value={m._id}>{m.name || m.title}</option>
+                        ))
+                      : [<option key="none" value="" disabled>No movies assigned to this theatre</option>];
+                  })()}
+                </select>
+                {showForm.theatreId && (() => {
+                  const selectedTheatre = theatres.find(t => t._id === showForm.theatreId);
+                  const theatreMovieIds = selectedTheatre?.movies || [];
+                  return theatreMovieIds.length === 0 ? (
+                    <p className="text-[10px] text-amber-500 font-semibold mt-1">⚠ This theatre has no movies assigned. Add movies via My Theatres first.</p>
+                  ) : null;
+                })()}
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -873,4 +873,4 @@ function Admin() {
   );
 }
 
-export default Admin;
+export default ClientDashboard;

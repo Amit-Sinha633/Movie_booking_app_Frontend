@@ -1,140 +1,251 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Play } from "lucide-react";
+import { ChevronLeft, ChevronRight, Play, MapPin, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
-const BANNER_ITEMS = [
-  {
-    id: "m1",
-    title: "Deadpool & Wolverine",
-    tagline: "The Ultimate Cinematic Duo Reunited",
-    genre: "Action • Comedy • Sci-Fi",
-    image: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1200&auto=format&fit=crop&q=80",
-    description: "Witness the clash of claw and wit. Booking open across all screens.",
-    cta: "Book Tickets"
-  },
-  {
-    id: "m2",
-    title: "Inside Out 2",
-    tagline: "Make Room For New Emotions!",
-    genre: "Animation • Comedy • Family",
-    image: "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=1200&auto=format&fit=crop&q=80",
-    description: "The blockbuster family movie of the year is now playing in IMAX 3D.",
-    cta: "Book Tickets"
-  },
-  {
-    id: "promo1",
-    title: "Flat 50% Off on Second Ticket",
-    tagline: "Exclusive CinePass Premium Offer",
-    genre: "Promo Offer",
-    image: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1200&auto=format&fit=crop&q=80",
-    description: "Use code CINEPASS50 on UPI payments. Maximum discount ₹150.",
-    cta: "View Offers"
-  }
-];
+import { useMovies } from "../contexts/MovieContext";
+import { showService } from "../services/showService";
+import { theatreService } from "../services/theatreService";
 
 function HeroCarousel() {
+  const { movies, loading: moviesLoading, error: moviesError, refreshMovies } = useMovies();
+  const [featuredMovies, setFeaturedMovies] = useState([]);
+  const [movieTheatres, setMovieTheatres] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [index, setIndex] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
+    const fetchData = async () => {
+      if (moviesLoading) return;
+      if (moviesError) {
+        setError("Unable to load featured movies.");
+        setLoading(false);
+        return;
+      }
+      
+      try {
+        const released = movies.filter(m => m.releaseStatus === "RELEASED" || m.movieStatus === "RELEASED" || m.status === "RELEASED" || !m.releaseStatus); // Fallback if status not strictly enforced
+        // If none released, just fallback to any movies
+        const activeMovies = released.length > 0 ? released : movies.slice(0, 5);
+        const topFeatured = activeMovies.slice(0, 5);
+        
+        if (topFeatured.length > 0) {
+          // Attempt to fetch theatres and shows safely
+          let allShows = [];
+          let allTheatres = [];
+          
+          try {
+            allShows = await showService.getShows() || [];
+            allTheatres = await theatreService.getTheatres() || [];
+          } catch (e) {
+            console.warn("Failed to load shows/theatres for hero banner", e);
+          }
+          
+          const theatresMap = {};
+          
+          topFeatured.forEach(movie => {
+            const movieShows = allShows.filter(s => s.movieId === movie._id);
+            const theatreIds = [...new Set(movieShows.map(s => s.theatreId))];
+            
+            const theatres = theatreIds.map(tid => {
+              const t = allTheatres.find(th => th._id === tid);
+              return t ? t.name : null;
+            }).filter(Boolean);
+            
+            theatresMap[movie._id] = theatres;
+          });
+          
+          setMovieTheatres(theatresMap);
+        }
+        
+        setFeaturedMovies(topFeatured);
+        setError(null);
+      } catch (err) {
+        console.error("Failed to fetch featured movies data", err);
+        setError("Unable to load featured movies.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, [movies, moviesLoading, moviesError]);
+
+  useEffect(() => {
+    if (featuredMovies.length <= 1) return;
     const timer = setInterval(() => {
       handleNext();
-    }, 6000);
+    }, 5000);
     return () => clearInterval(timer);
-  }, [index]);
+  }, [index, featuredMovies]);
 
   const handleNext = () => {
-    setIndex((prev) => (prev + 1) % BANNER_ITEMS.length);
+    if (featuredMovies.length === 0) return;
+    setIndex((prev) => (prev + 1) % featuredMovies.length);
   };
 
   const handlePrev = () => {
-    setIndex((prev) => (prev - 1 + BANNER_ITEMS.length) % BANNER_ITEMS.length);
+    if (featuredMovies.length === 0) return;
+    setIndex((prev) => (prev - 1 + featuredMovies.length) % featuredMovies.length);
   };
 
-  const handleCtaClick = (item) => {
-    if (item.id.startsWith("m")) {
-      navigate(`/movie/${item.id}`);
-    } else {
-      // Direct to generic offers
-      alert("Offer CINEPASS50 applied! Select a movie to book tickets.");
-    }
+  const handleRetry = () => {
+    setLoading(true);
+    refreshMovies();
   };
+
+  if (loading || moviesLoading) {
+    return (
+      <div className="w-full h-[320px] md:h-[480px] bg-slate-900 animate-pulse flex items-center justify-center">
+        <div className="text-slate-600 font-bold flex flex-col items-center gap-2">
+          <div className="w-12 h-12 border-4 border-slate-600 border-t-slate-400 rounded-full animate-spin"></div>
+          Loading Featured Movies...
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full h-[320px] md:h-[480px] bg-slate-900 flex flex-col items-center justify-center text-slate-300">
+        <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
+        <h2 className="text-xl font-bold mb-2">{error}</h2>
+        <button 
+          onClick={handleRetry}
+          className="px-6 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg font-bold transition-colors"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  if (featuredMovies.length === 0) {
+    return (
+      <div className="w-full h-[320px] md:h-[480px] bg-slate-900 flex items-center justify-center text-slate-400">
+        <h2 className="text-xl font-bold">No movies currently featured</h2>
+      </div>
+    );
+  }
+
+  const currentMovie = featuredMovies[index];
+  const theatres = movieTheatres[currentMovie._id] || [];
+  const backgroundImageUrl = currentMovie.backdropUrl || currentMovie.posterUrl || currentMovie.imageUrl;
 
   return (
-    <div className="relative w-full h-[320px] md:h-[480px] overflow-hidden bg-slate-950">
+    <div className="relative w-full h-[400px] md:h-[550px] overflow-hidden bg-slate-950">
       
       {/* Slides */}
       <AnimatePresence mode="wait">
         <motion.div
-          key={index}
-          initial={{ opacity: 0.6 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0.6 }}
-          transition={{ duration: 0.6 }}
+          key={currentMovie._id}
+          initial={{ opacity: 0.8, scale: 1.02 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0.8 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
           className="absolute inset-0 w-full h-full"
         >
-          {/* Backdrop Image */}
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-slate-950/20 z-10" />
+          {/* Backdrop Image & Gradients */}
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-slate-950/20 z-10" />
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/50 to-transparent z-10" />
           <img
-            src={BANNER_ITEMS[index].image}
-            alt={BANNER_ITEMS[index].title}
-            className="w-full h-full object-cover object-center opacity-70"
+            src={backgroundImageUrl}
+            alt={currentMovie.name}
+            className="w-full h-full object-cover object-top opacity-60"
           />
 
           {/* Banner Contents */}
-          <div className="absolute inset-0 flex items-center z-20">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-              <div className="max-w-2xl text-left text-white space-y-3 sm:space-y-4">
+          <div className="absolute inset-0 flex items-center justify-center z-20">
+            <div className="w-full px-12 sm:px-16 flex justify-center">
+              <div className="max-w-2xl w-full flex flex-col items-center text-center text-white space-y-4 sm:space-y-6 bg-slate-950/60 p-6 sm:p-10 rounded-3xl backdrop-blur-md border border-white/10 shadow-2xl">
                 
-                <motion.span
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.1 }}
-                  className="inline-block px-3 py-1 bg-primary/20 backdrop-blur-md text-primary font-bold text-xs rounded-full uppercase tracking-wider border border-primary/30"
-                >
-                  {BANNER_ITEMS[index].genre}
-                </motion.span>
+                <div className="flex flex-wrap justify-center gap-2">
+                  <motion.span
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.1 }}
+                    className="inline-block px-3 py-1 bg-primary/20 backdrop-blur-md text-primary font-bold text-xs rounded-full uppercase tracking-wider border border-primary/30"
+                  >
+                    {currentMovie.genre || "FEATURED"}
+                  </motion.span>
+                  {currentMovie.language && (
+                    <motion.span
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.2 }}
+                      className="inline-block px-3 py-1 bg-white/10 backdrop-blur-md text-white font-bold text-xs rounded-full uppercase tracking-wider border border-white/20"
+                    >
+                      {currentMovie.language}
+                    </motion.span>
+                  )}
+                  {currentMovie.rating && (
+                    <motion.span
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.25 }}
+                      className="inline-block px-3 py-1 bg-yellow-500/20 backdrop-blur-md text-yellow-400 font-bold text-xs rounded-full uppercase tracking-wider border border-yellow-500/30"
+                    >
+                      ★ {currentMovie.rating}
+                    </motion.span>
+                  )}
+                </div>
                 
                 <motion.h1
                   initial={{ y: 30, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                  className="text-3xl sm:text-5xl font-black tracking-tight drop-shadow-lg"
+                  transition={{ delay: 0.3 }}
+                  className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight drop-shadow-lg text-white"
                 >
-                  {BANNER_ITEMS[index].title}
+                  {currentMovie.name}
                 </motion.h1>
                 
                 <motion.p
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.3 }}
-                  className="text-base sm:text-lg font-medium text-slate-350 text-slate-200 drop-shadow-md"
-                >
-                  {BANNER_ITEMS[index].tagline}
-                </motion.p>
-                
-                <motion.p
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.4 }}
-                  className="hidden sm:block text-sm text-slate-400 max-w-lg"
+                  className="hidden sm:block text-sm sm:text-base text-slate-300 max-w-lg line-clamp-3 leading-relaxed"
                 >
-                  {BANNER_ITEMS[index].description}
+                  {currentMovie.description}
                 </motion.p>
+
+                {theatres.length > 0 && (
+                  <motion.div
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.5 }}
+                    className="flex flex-col items-center gap-2"
+                  >
+                    <span className="text-xs text-slate-400 font-bold uppercase tracking-widest flex items-center gap-1">
+                      <MapPin className="w-3 h-3" /> Now Showing In
+                    </span>
+                    <div className="flex flex-wrap justify-center gap-2">
+                      {theatres.slice(0, 3).map((t, idx) => (
+                        <span key={idx} className="text-xs font-semibold text-slate-300 bg-white/5 px-2 py-1 rounded border border-white/10">
+                          {t}
+                        </span>
+                      ))}
+                      {theatres.length > 3 && (
+                        <span className="text-xs font-semibold text-slate-400 px-2 py-1">
+                          +{theatres.length - 3} more
+                        </span>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
 
                 <motion.div
                   initial={{ y: 25, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.5 }}
-                  className="pt-2"
+                  transition={{ delay: 0.6 }}
+                  className="pt-4"
                 >
                   <button
-                    onClick={() => handleCtaClick(BANNER_ITEMS[index])}
-                    className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/95 text-white font-bold text-sm rounded-lg transition-all duration-200 shadow-lg shadow-primary/30 transform hover:-translate-y-0.5"
+                    onClick={() => navigate(`/movie/${currentMovie._id}`)}
+                    className="flex items-center gap-2 px-8 py-4 bg-primary hover:bg-primary/90 text-white font-black text-sm sm:text-base rounded-xl transition-all duration-300 shadow-[0_0_20px_rgba(248,68,100,0.4)] hover:shadow-[0_0_30px_rgba(248,68,100,0.6)] transform hover:-translate-y-1"
                   >
-                    {BANNER_ITEMS[index].id.startsWith("m") && <Play className="h-4 w-4 fill-white" />}
-                    {BANNER_ITEMS[index].cta}
+                    <Play className="h-5 w-5 fill-white" />
+                    Book Tickets
                   </button>
                 </motion.div>
               </div>
@@ -144,32 +255,38 @@ function HeroCarousel() {
       </AnimatePresence>
 
       {/* Navigation Arrows */}
-      <button
-        onClick={handlePrev}
-        className="absolute top-1/2 left-4 -translate-y-1/2 z-30 p-2 rounded-full bg-black/40 hover:bg-black/60 text-white border border-white/10 hover:border-white/30 backdrop-blur-sm transition-all"
-        aria-label="Previous slide"
-      >
-        <ChevronLeft className="h-6 w-6" />
-      </button>
-      <button
-        onClick={handleNext}
-        className="absolute top-1/2 right-4 -translate-y-1/2 z-30 p-2 rounded-full bg-black/40 hover:bg-black/60 text-white border border-white/10 hover:border-white/30 backdrop-blur-sm transition-all"
-        aria-label="Next slide"
-      >
-        <ChevronRight className="h-6 w-6" />
-      </button>
+      {featuredMovies.length > 1 && (
+        <>
+          <button
+            onClick={handlePrev}
+            className="absolute top-1/2 left-4 sm:left-8 -translate-y-1/2 z-30 p-3 rounded-full bg-black/40 hover:bg-black/80 text-white border border-white/10 hover:border-white/40 backdrop-blur-md transition-all shadow-xl"
+            aria-label="Previous slide"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </button>
+          <button
+            onClick={handleNext}
+            className="absolute top-1/2 right-4 sm:right-8 -translate-y-1/2 z-30 p-3 rounded-full bg-black/40 hover:bg-black/80 text-white border border-white/10 hover:border-white/40 backdrop-blur-md transition-all shadow-xl"
+            aria-label="Next slide"
+          >
+            <ChevronRight className="h-6 w-6" />
+          </button>
+        </>
+      )}
 
       {/* Dot Indicators */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex gap-2">
-        {BANNER_ITEMS.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setIndex(i)}
-            className={`h-2.5 rounded-full transition-all duration-300 ${i === index ? "w-6 bg-primary" : "w-2.5 bg-slate-500/70"}`}
-            aria-label={`Go to slide ${i + 1}`}
-          />
-        ))}
-      </div>
+      {featuredMovies.length > 1 && (
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex gap-3">
+          {featuredMovies.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setIndex(i)}
+              className={`h-2 rounded-full transition-all duration-500 ${i === index ? "w-8 bg-primary shadow-[0_0_10px_rgba(248,68,100,0.8)]" : "w-2 bg-white/40 hover:bg-white/60"}`}
+              aria-label={`Go to slide ${i + 1}`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

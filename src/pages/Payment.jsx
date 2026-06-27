@@ -25,6 +25,11 @@ function Payment() {
     const loadBooking = async () => {
       setLoading(true);
       try {
+        if (location.state?.booking) {
+          setBooking(location.state.booking);
+          setLoading(false);
+          return;
+        }
         const data = await bookingService.getBooking(bookingId);
         setBooking(data);
       } catch (err) {
@@ -81,7 +86,7 @@ function Payment() {
     );
   }
 
-  const invoiceAmount = finalAmount || (booking.totalCosts + Math.round(booking.totalCosts * 0.10) + Math.round(booking.totalCosts * 0.10 * 0.18));
+  const invoiceAmount = finalAmount || booking.totalCosts;
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-dark-bg text-slate-800 dark:text-slate-100 transition-colors duration-300">
