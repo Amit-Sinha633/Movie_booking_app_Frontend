@@ -53,7 +53,7 @@ function Payment() {
       const paymentResponse = await paymentService.createPayment(bookingId, amount, showId);
       
       // 2. Set booking status to SUCCESSFULL
-      await bookingService.updateBookingStatus(bookingId, "SUCCESSFULL");
+      // await bookingService.updateBookingStatus(bookingId, "SUCCESSFULL");
       
       // 3. Show Success Modal
       setPaying(false);
