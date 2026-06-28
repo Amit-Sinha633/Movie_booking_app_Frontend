@@ -5,7 +5,7 @@ import axios from "axios";
 // so local development works exactly as before.
 //
 // In production (Netlify), VITE_API_URL is baked into the bundle from
-// .env.production = "https://movie-booking-app-topaz-eight.vercel.app"
+// .env.production = "https://movie-booking-app-backend-eight.vercel.app"
 // so all API calls are sent directly to the deployed Vercel backend.
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "",  // "" in dev (proxy), Vercel URL in prod
