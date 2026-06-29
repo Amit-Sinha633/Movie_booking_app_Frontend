@@ -9,6 +9,12 @@ export const showService = {
     return response.data?.data || response.data || [];
   },
 
+  // Get available shows in a specific theatre
+  async getShowsAvailableInTheatre(theatreId) {
+    const response = await axiosInstance.get(`/mba/api/v1/show/getShowsAvailableInTheatre/${theatreId}`);
+    return response.data?.data || response.data || [];
+  },
+
   // Get only the shows owned by the authenticated client
   async getMyShows() {
     const response = await axiosInstance.get("/mba/api/v1/show/getMyShows", {

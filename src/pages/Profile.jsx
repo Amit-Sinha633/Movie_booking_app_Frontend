@@ -14,6 +14,7 @@ function Profile() {
   const [activeTab, setActiveTab] = useState("bookings");
   const [bookings, setBookings] = useState([]);
   const [bookingsLoading, setBookingsLoading] = useState(true);
+  const [bookingsError, setBookingsError] = useState(null);
   const [savedMovies, setSavedMovies] = useState([]);
 
   // Form states for account details
@@ -25,8 +26,9 @@ function Profile() {
   useEffect(() => {
     const fetchProfileData = async () => {
       setBookingsLoading(true);
+      setBookingsError(null);
       try {
-        const history = await bookingService.getMyBookings();
+        const history = await bookingService.getUserBookingHistory();
         setBookings(history);
         
         // Fetch mock wishlisted movies
@@ -34,6 +36,8 @@ function Profile() {
         setSavedMovies(list.slice(0, 2));
       } catch (err) {
         console.error("Failed to load profile bookings", err);
+        setBookingsError(err?.message || "Failed to load booking history.");
+        toast.error("Failed to load your booking history.");
       } finally {
         setBookingsLoading(false);
       }
@@ -145,6 +149,11 @@ function Profile() {
 
                   {bookingsLoading ? (
                     <LoadingSpinner />
+                  ) : bookingsError ? (
+                    <div className="text-center py-12 text-red-500 font-semibold space-y-1">
+                      <p>{bookingsError}</p>
+                      <button onClick={() => window.location.reload()} className="text-xs text-primary underline mt-2">Try Again</button>
+                    </div>
                   ) : bookings.length === 0 ? (
                     <div className="text-center py-12 text-slate-400 font-semibold space-y-1">
                       <p>You haven't booked any tickets yet.</p>
@@ -153,41 +162,60 @@ function Profile() {
                   ) : (
                     <div className="space-y-6">
                       {bookings.map((booking) => {
-                        const isSuccess = booking.status === "SUCCESSFULL";
+                        const isSuccess = booking?.status?.toLowerCase() === "successfull" || booking?.status?.toLowerCase() === "successful";
                         return (
                           <div 
                             key={booking._id} 
                             className="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-xs hover:shadow-sm transition-all"
                           >
                             {/* Card Header info */}
-                            <div className="bg-slate-900 dark:bg-slate-950 p-4 text-white flex flex-wrap justify-between items-center gap-3 text-left">
-                              <div>
-                                <h3 className="font-bold text-base sm:text-lg">{booking.movieName || "Movie"}</h3>
-                                <p className="text-xs text-slate-400">{booking.theatreName || "Theatre"}</p>
+                            <div className="bg-slate-900 dark:bg-slate-950 p-4 text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-left">
+                              <div className="flex items-center gap-4">
+                                {/* Optional Poster */}
+                                {(booking?.movieId?.posterUrl || booking?.posterUrl) && (
+                                  <div className="w-16 h-20 rounded-md overflow-hidden flex-shrink-0 border border-slate-800 bg-slate-800">
+                                    <img src={booking?.movieId?.posterUrl || booking?.posterUrl} alt="Movie Poster" className="w-full h-full object-cover" />
+                                  </div>
+                                )}
+                                <div>
+                                  <h3 className="font-bold text-base sm:text-lg">{booking?.movieId?.name || booking?.movieName || "Unknown Movie"}</h3>
+                                  <p className="text-xs text-slate-300">{booking?.theatreId?.name || booking?.theatreName || "Unknown Theatre"}</p>
+                                  <p className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1">
+                                    <MapPin className="w-3 h-3"/> {booking?.theatreId?.address || booking?.theatreAddress || "Address not available"}
+                                  </p>
+                                </div>
                               </div>
-                              <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${
-                                isSuccess ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/20" : "bg-yellow-500/20 text-yellow-400 border border-yellow-500/20"
-                              }`}>
-                                {booking.status}
-                              </span>
+                              <div className="flex flex-col items-end gap-2">
+                                <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${
+                                  isSuccess ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/20" : "bg-yellow-500/20 text-yellow-400 border border-yellow-500/20"
+                                }`}>
+                                  {booking?.status || "Processing"}
+                                </span>
+                                <p className="text-[10px] text-slate-400">ID: {booking?._id}</p>
+                              </div>
                             </div>
 
                             {/* Card Info details */}
                             <div className="p-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-xs font-semibold text-slate-500">
                               <div>
-                                <p className="text-[10px] text-slate-400 uppercase tracking-wider">Date & Time</p>
-                                <p className="font-bold text-slate-800 dark:text-slate-200 mt-0.5">{booking.timing}</p>
+                                <p className="text-[10px] text-slate-400 uppercase tracking-wider">Booking Date</p>
+                                <p className="font-bold text-slate-800 dark:text-slate-200 mt-0.5">
+                                  {booking?.createdAt ? new Date(booking.createdAt).toLocaleDateString() : "N/A"}
+                                </p>
                               </div>
                               <div>
-                                <p className="text-[10px] text-slate-400 uppercase tracking-wider">Seats Booked</p>
-                                <p className="font-extrabold text-primary mt-0.5">{booking.seats?.join(", ") || `${booking.noOfSeats} Seats`}</p>
+                                <p className="text-[10px] text-slate-400 uppercase tracking-wider">Show Date & Time</p>
+                                <p className="font-bold text-slate-800 dark:text-slate-200 mt-0.5">{booking?.timing || "N/A"}</p>
                               </div>
                               <div>
+                                <p className="text-[10px] text-slate-400 uppercase tracking-wider">Tickets & Seats</p>
+                                <p className="font-extrabold text-primary mt-0.5">
+                                  {booking?.noOfSeats || 0} Tickets {booking?.seats?.length ? `(${booking.seats.join(", ")})` : ""}
+                                </p>
+                              </div>
+                              <div className="flex flex-col justify-center">
                                 <p className="text-[10px] text-slate-400 uppercase tracking-wider">Total Paid</p>
-                                <p className="font-bold text-slate-800 dark:text-slate-200 mt-0.5">₹{booking.totalCosts}</p>
-                              </div>
-                              <div className="flex justify-end items-center">
-                                <QrCode className="h-10 w-10 text-slate-900 bg-white p-1 rounded-lg border" />
+                                <p className="font-bold text-slate-800 dark:text-slate-200 mt-0.5">₹{booking?.totalCosts || 0}</p>
                               </div>
                             </div>
 

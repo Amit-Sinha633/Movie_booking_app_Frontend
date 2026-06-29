@@ -22,6 +22,13 @@ export const bookingService = {
     return response.data?.data || response.data || [];
   },
 
+  // Retrieve logged-in user booking history
+  async getUserBookingHistory() {
+    const response = await axiosInstance.get("/mba/api/v1/book/userBookingHistory");
+    console.log("User Booking History Response:", response.data);
+    return response.data?.data || response.data || [];
+  },
+
   // Retrieve details of a booking
   async getBooking(bookingId) {
     // Query all user bookings and filter

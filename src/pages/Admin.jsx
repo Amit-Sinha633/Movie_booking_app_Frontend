@@ -27,6 +27,14 @@ function Admin() {
   const [movieModal, setMovieModal] = useState(false);
   const [theatreModal, setTheatreModal] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [deleteUserModal, setDeleteUserModal] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
+  const [deleteTheatreModal, setDeleteTheatreModal] = useState(false);
+  const [theatreToDelete, setTheatreToDelete] = useState(null);
+  const [deleteMovieModal, setDeleteMovieModal] = useState(false);
+  const [movieToDelete, setMovieToDelete] = useState(null);
+  const [deleteShowModal, setDeleteShowModal] = useState(false);
+  const [showToDelete, setShowToDelete] = useState(null);
 
   // Edit contexts
   const [editItem, setEditItem] = useState(null); // stores active movie/theatre/show to update
@@ -39,7 +47,7 @@ function Admin() {
 
   // Theatre Form Fields
   const [theatreForm, setTheatreForm] = useState({
-    name: "", description: "", city: "Kolkata", pinCode: "", address: "", movies: []
+    name: "", description: "", city: "kolkata", pinCode: "", address: "", movies: []
   });
 
   // Show Form Fields
@@ -90,26 +98,35 @@ function Admin() {
     }
   };
 
-  const handleMovieDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this movie?")) return;
+  const handleMovieDelete = (id) => {
+    setMovieToDelete(id);
+    setDeleteMovieModal(true);
+  };
+
+  const confirmMovieDelete = async () => {
+    if (!movieToDelete) return;
     try {
-      await movieService.deleteMovie(id);
+      await movieService.deleteMovie(movieToDelete);
       toast.success("Movie deleted!");
       loadData();
     } catch (err) {
       toast.error("Delete operation failed.");
+    } finally {
+      setDeleteMovieModal(false);
+      setMovieToDelete(null);
     }
   };
 
   // CRUD Theatre
   const handleTheatreSubmit = async (e) => {
     e.preventDefault();
+    const formattedForm = { ...theatreForm, city: theatreForm.city.toLowerCase() };
     try {
       if (editItem) {
-        await theatreService.updateTheatre(editItem._id, theatreForm);
+        await theatreService.updateTheatre(editItem._id, formattedForm);
         toast.success("Theatre updated successfully!");
       } else {
-        await theatreService.createTheatre(theatreForm);
+        await theatreService.createTheatre(formattedForm);
         toast.success("Theatre registered successfully!");
       }
       setTheatreModal(false);
@@ -120,14 +137,22 @@ function Admin() {
     }
   };
 
-  const handleTheatreDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this theatre?")) return;
+  const handleTheatreDelete = (id) => {
+    setTheatreToDelete(id);
+    setDeleteTheatreModal(true);
+  };
+
+  const confirmTheatreDelete = async () => {
+    if (!theatreToDelete) return;
     try {
-      await theatreService.deleteTheatre(id);
+      await theatreService.deleteTheatre(theatreToDelete);
       toast.success("Theatre deleted!");
       loadData();
     } catch (err) {
       toast.error("Delete operation failed.");
+    } finally {
+      setDeleteTheatreModal(false);
+      setTheatreToDelete(null);
     }
   };
 
@@ -154,14 +179,22 @@ function Admin() {
     }
   };
 
-  const handleShowDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this showtimes?")) return;
+  const handleShowDelete = (id) => {
+    setShowToDelete(id);
+    setDeleteShowModal(true);
+  };
+
+  const confirmShowDelete = async () => {
+    if (!showToDelete) return;
     try {
-      await showService.deleteShow(id);
+      await showService.deleteShow(showToDelete);
       toast.success("Show deleted!");
       loadData();
     } catch (err) {
       toast.error("Delete operation failed.");
+    } finally {
+      setDeleteShowModal(false);
+      setShowToDelete(null);
     }
   };
 
@@ -172,6 +205,25 @@ function Admin() {
       loadData();
     } catch (err) {
       toast.error("Failed to update user.");
+    }
+  };
+
+  const handleUserDelete = (id) => {
+    setUserToDelete(id);
+    setDeleteUserModal(true);
+  };
+
+  const confirmUserDelete = async () => {
+    if (!userToDelete) return;
+    try {
+      await userService.deleteUser(userToDelete);
+      toast.success("User deleted!");
+      loadData();
+    } catch (err) {
+      toast.error("Delete operation failed.");
+    } finally {
+      setDeleteUserModal(false);
+      setUserToDelete(null);
     }
   };
 
@@ -357,7 +409,7 @@ function Admin() {
                     <button
                       onClick={() => {
                         setEditItem(null);
-                        setTheatreForm({ name: "", description: "", city: "Kolkata", pinCode: "", address: "", movies: [] });
+                        setTheatreForm({ name: "", description: "", city: "kolkata", pinCode: "", address: "", movies: [] });
                         setTheatreModal(true);
                       }}
                       className="px-3.5 py-2 bg-primary hover:bg-primary/95 text-white font-bold text-xs rounded-xl flex items-center gap-1 cursor-pointer"
@@ -388,7 +440,7 @@ function Admin() {
                                   setEditItem(t);
                                   setTheatreForm({
                                     name: t.name, description: t.description || "",
-                                    city: t.city, pinCode: t.pinCode || "", address: t.address,
+                                    city: t.city?.toLowerCase() || "", pinCode: t.pinCode || "", address: t.address,
                                     movies: t.movies || []
                                   });
                                   setTheatreModal(true);
@@ -537,7 +589,8 @@ function Admin() {
                           <th className="py-3 text-left">Name</th>
                           <th className="py-3 text-left">Email Address</th>
                           <th className="py-3 text-left">Role</th>
-                          <th className="py-3 text-right">Status</th>
+                          <th className="py-3 text-left">Status</th>
+                          <th className="py-3 text-right">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 dark:divide-slate-850">
@@ -556,17 +609,25 @@ function Admin() {
                                 <option value="CLIENT">CLIENT</option>
                               </select>
                             </td>
-                            <td className="py-4 text-right">
+                            <td className="py-4 text-left">
                               <select 
                                 value={u.userStatus}
                                 onChange={(e) => handleUserUpdate(u._id, { userStatus: e.target.value })}
                                 className="px-2 py-1 rounded bg-emerald-500/10 text-emerald-500 font-bold text-[10px] outline-none cursor-pointer"
-                                style={{ textAlignLast: "right" }}
                               >
                                 <option value="APPROVED">APPROVED</option>
                                 <option value="PENDING">PENDING</option>
                                 <option value="REJECTED">REJECTED</option>
                               </select>
+                            </td>
+                            <td className="py-4 text-right">
+                              <button
+                                onClick={() => handleUserDelete(u._id)}
+                                className="text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
+                                title="Delete"
+                              >
+                                <Trash2 className="h-4.5 w-4.5" />
+                              </button>
                             </td>
                           </tr>
                         ))}
@@ -710,7 +771,7 @@ function Admin() {
                   <label className="font-bold text-slate-400">City</label>
                   <input
                     type="text" required value={theatreForm.city}
-                    onChange={(e) => setTheatreForm({...theatreForm, city: e.target.value})}
+                    onChange={(e) => setTheatreForm({...theatreForm, city: e.target.value.toLowerCase()})}
                     className="block w-full p-2 border dark:border-slate-700/80 rounded bg-slate-50 dark:bg-slate-900"
                   />
                 </div>
@@ -864,6 +925,138 @@ function Admin() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete User Modal */}
+      {deleteUserModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-855 p-6 space-y-4 shadow-2xl text-center">
+            <h3 className="text-lg font-black text-slate-900 dark:text-white pb-2">
+              Confirm Deletion
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Are you sure you want to delete this user? This action cannot be undone.
+            </p>
+            <div className="flex gap-3 pt-4">
+              <button
+                type="button" 
+                onClick={() => {
+                  setDeleteUserModal(false);
+                  setUserToDelete(null);
+                }}
+                className="w-1/2 py-2 border text-slate-500 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 font-bold cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmUserDelete}
+                className="w-1/2 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 font-bold cursor-pointer"
+              >
+                Delete User
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Theatre Modal */}
+      {deleteTheatreModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-855 p-6 space-y-4 shadow-2xl text-center">
+            <h3 className="text-lg font-black text-slate-900 dark:text-white pb-2">
+              Confirm Deletion
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Are you sure you want to delete this theatre? This action cannot be undone.
+            </p>
+            <div className="flex gap-3 pt-4">
+              <button
+                type="button" 
+                onClick={() => {
+                  setDeleteTheatreModal(false);
+                  setTheatreToDelete(null);
+                }}
+                className="w-1/2 py-2 border text-slate-500 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 font-bold cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmTheatreDelete}
+                className="w-1/2 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 font-bold cursor-pointer"
+              >
+                Delete Theatre
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Movie Modal */}
+      {deleteMovieModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-855 p-6 space-y-4 shadow-2xl text-center">
+            <h3 className="text-lg font-black text-slate-900 dark:text-white pb-2">
+              Confirm Deletion
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Are you sure you want to delete this movie? This action cannot be undone.
+            </p>
+            <div className="flex gap-3 pt-4">
+              <button
+                type="button" 
+                onClick={() => {
+                  setDeleteMovieModal(false);
+                  setMovieToDelete(null);
+                }}
+                className="w-1/2 py-2 border text-slate-500 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 font-bold cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmMovieDelete}
+                className="w-1/2 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 font-bold cursor-pointer"
+              >
+                Delete Movie
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Show Modal */}
+      {deleteShowModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-855 p-6 space-y-4 shadow-2xl text-center">
+            <h3 className="text-lg font-black text-slate-900 dark:text-white pb-2">
+              Confirm Deletion
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Are you sure you want to delete this showtimes? This action cannot be undone.
+            </p>
+            <div className="flex gap-3 pt-4">
+              <button
+                type="button" 
+                onClick={() => {
+                  setDeleteShowModal(false);
+                  setShowToDelete(null);
+                }}
+                className="w-1/2 py-2 border text-slate-500 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 font-bold cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmShowDelete}
+                className="w-1/2 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 font-bold cursor-pointer"
+              >
+                Delete Show
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -1,5 +1,5 @@
 import React from "react";
-import MovieCard from "./MovieCard";
+import MovieBannerCard from "./MovieBannerCard";
 import { ChevronRight } from "lucide-react";
 
 function MovieSection({ title, movies = [] }) {
@@ -20,10 +20,15 @@ function MovieSection({ title, movies = [] }) {
           </button>
         </div>
 
-        {/* Horizontal Scroll Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-          {movies.slice(0, 5).map((movie) => (
-            <MovieCard key={movie._id} movie={movie} />
+        {/* Responsive Grid List */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 pb-6">
+          {movies.slice(0, 12).map((movie) => (
+            <MovieBannerCard 
+              key={movie._id} 
+              movie={movie}
+              compact={true}
+              className="h-[280px] sm:h-[350px]" 
+            />
           ))}
         </div>
       </div>

@@ -17,5 +17,13 @@ export const userService = {
     "/mba/api/v1/user/getAllUsers"
   );
   return response.data?.data || response.data;
+  },
+
+  // Delete a user
+  async deleteUser(userId) {
+    const response = await axiosInstance.delete(
+      `/mba/api/v1/user/deleteUser/${userId}`
+    );
+    return response.data?.data || response.data;
   }
 };

@@ -5,16 +5,17 @@ const enrichMovie = (movie) => {
   if (!movie) return null;
   return {
     ...movie,
-    posterUrl: movie.posterUrl || "https://images.unsplash.com/photo-1594909122845-11baa439b7bf?w=500&auto=format&fit=crop&q=60",
-    backdropUrl: movie.backdropUrl || "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1200&auto=format&fit=crop&q=80",
-    genre: movie.genre || "Drama, Thriller",
-    rating: movie.rating || 8.2,
-    likesPercent: movie.likesPercent || 85,
+    // Preserve image URLs exactly as they come from backend (or undefined/null)
+    posterUrl: movie.posterUrl || null,
+    backdropUrl: movie.backdropUrl || null,
+    genre: movie.genre || "Drama, Action",
+    rating: movie.rating || 8.0,
+    likesPercent: movie.likesPercent || 80,
     duration: movie.duration || "2h 10m",
     format: movie.format || "2D",
     casts: movie.casts?.length ? movie.casts : ["Lead Actor", "Supporting Actor"],
     director: movie.director || "Unknown Director",
-    trailerUrl: movie.trailerUrl || "https://www.youtube.com/embed/cbwK_3P6f38"
+    trailerUrl: movie.trailerUrl || null
   };
 };
 

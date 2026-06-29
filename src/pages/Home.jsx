@@ -3,11 +3,13 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import HeroBanner from "../components/HeroBanner";
 import MovieSection from "../components/MovieSection";
-import MovieCard from "../components/MovieCard";
+import EmptyState from "../components/EmptyState";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { useMovies } from "../contexts/MovieContext";
 import { theatreService } from "../services/theatreService";
-import { Film, MapPin, Ticket, Award, Sparkles } from "lucide-react";
+import { showService } from "../services/showService";
+import { Film, MapPin, Ticket, Award, Sparkles, Calendar, Clock } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 
 
@@ -15,6 +17,28 @@ function Home() {
   const { filteredMovies, loading, error, selectedCity } = useMovies();
   const [theatres, setTheatres] = useState([]);
   const [theatresLoading, setTheatresLoading] = useState(false);
+  const navigate = useNavigate();
+
+  // Modal State
+  const [selectedTheatre, setSelectedTheatre] = useState(null);
+  const [theatreShows, setTheatreShows] = useState([]);
+  const [showsLoading, setShowsLoading] = useState(false);
+  const [isShowsModalOpen, setIsShowsModalOpen] = useState(false);
+
+  const handleViewShows = async (theatre) => {
+    setSelectedTheatre(theatre);
+    setIsShowsModalOpen(true);
+    setShowsLoading(true);
+    try {
+      const shows = await showService.getShowsAvailableInTheatre(theatre._id);
+      setTheatreShows(shows);
+    } catch (err) {
+      console.error("Failed to fetch shows", err);
+      setTheatreShows([]);
+    } finally {
+      setShowsLoading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchCityTheatres = async () => {
@@ -60,63 +84,46 @@ function Home() {
       ) : (
         <main className="flex-grow pb-16">
           
-          {/* 1. Recommended Movies (Horizontal Scroll / Top Row) */}
-          <MovieSection 
-            title="Recommended Movies" 
-            movies={nowShowingMovies} 
-          />
-
-          {/* Promotional Banner */}
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-6">
-            <div className="w-full rounded-2xl bg-gradient-to-r from-rose-500 to-primary p-6 sm:p-8 text-white flex flex-col sm:flex-row justify-between items-center gap-6 shadow-md">
-              <div className="space-y-1.5 text-center sm:text-left">
-                <h3 className="text-xl sm:text-2xl font-black tracking-tight flex items-center justify-center sm:justify-start gap-2">
-                  <Sparkles className="h-5 w-5 animate-pulse text-amber-300 fill-amber-300" />
-                  UPTO ₹150 OFF ON UPI PAYMENTS
-                </h3>
-                <p className="text-xs sm:text-sm text-rose-100 font-medium">
-                  Use CinePass checkout with UPI to save on your favorite blockbusters. Standard terms apply.
-                </p>
-              </div>
-              <button className="px-6 py-3 bg-white hover:bg-slate-150 text-primary font-extrabold text-sm rounded-xl transition-all shadow-md flex-shrink-0 cursor-pointer">
-                Select Movie
-              </button>
+          {/* Movies Content */}
+          {filteredMovies.length === 0 ? (
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+              <EmptyState title="No Movies Found" description="We couldn't find any movies matching your current filters." />
             </div>
-          </div>
+          ) : (
+            <>
+              {/* 1. Recommended Movies */}
+              <MovieSection 
+                title="Recommended Movies" 
+                movies={nowShowingMovies} 
+              />
 
-          {/* 2. Now Showing Grid */}
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 border-t border-slate-200/40 dark:border-slate-800/30">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-                Now Showing in <span className="text-primary">{selectedCity}</span>
-              </h2>
-            </div>
-            
-            {nowShowingMovies.length === 0 ? (
-              <p className="text-slate-400 text-sm py-4">No movies currently showing in this city.</p>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                {nowShowingMovies.map((movie) => (
-                  <MovieCard key={movie._id} movie={movie} />
-                ))}
+              {/* Promotional Banner */}
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-6">
+                <div className="w-full rounded-2xl bg-gradient-to-r from-rose-500 to-primary p-6 sm:p-8 text-white flex flex-col sm:flex-row justify-between items-center gap-6 shadow-md">
+                  <div className="space-y-1.5 text-center sm:text-left">
+                    <h3 className="text-xl sm:text-2xl font-black tracking-tight flex items-center justify-center sm:justify-start gap-2">
+                      <Sparkles className="h-5 w-5 animate-pulse text-amber-300 fill-amber-300" />
+                      UPTO ₹150 OFF ON UPI PAYMENTS
+                    </h3>
+                    <p className="text-xs sm:text-sm text-rose-100 font-medium">
+                      Use CinePass checkout with UPI to save on your favorite blockbusters. Standard terms apply.
+                    </p>
+                  </div>
+                </div>
               </div>
-            )}
-          </div>
 
-          {/* 3. Upcoming Movies Grid */}
-          {upcomingMovies.length > 0 && (
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 border-t border-slate-200/40 dark:border-slate-800/30">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-                  Upcoming Movies
-                </h2>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                {upcomingMovies.map((movie) => (
-                  <MovieCard key={movie._id} movie={movie} />
-                ))}
-              </div>
-            </div>
+              {/* 2. Now Showing */}
+              <MovieSection 
+                title={`Now Showing in ${selectedCity}`} 
+                movies={nowShowingMovies} 
+              />
+
+              {/* 3. Upcoming Movies */}
+              <MovieSection 
+                title="Upcoming Movies" 
+                movies={upcomingMovies} 
+              />
+            </>
           )}
 
 
@@ -137,27 +144,43 @@ function Home() {
                 {theatres.map((theatre) => (
                   <div 
                     key={theatre._id} 
-                    className="p-5 rounded-2xl bg-white dark:bg-dark-card border border-slate-200/50 dark:border-slate-800/60 shadow-sm space-y-4 text-left transition-all hover:shadow-md"
+                    className="relative p-6 rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 border border-slate-800 shadow-xl overflow-hidden group hover:border-primary/40 transition-all duration-500 transform hover:-translate-y-1"
                   >
-                    <div>
-                      <h3 className="font-bold text-slate-800 dark:text-slate-100 text-base flex items-center gap-1.5">
-                        <MapPin className="h-4.5 w-4.5 text-primary flex-shrink-0" />
-                        {theatre.name}
-                      </h3>
-                      <p className="text-xs text-slate-400 mt-1 pl-6 line-clamp-1">
-                        {theatre.address}
-                      </p>
-                    </div>
+                    {/* Decorative Background Element */}
+                    <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/20 transition-all duration-500" />
+                    <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    
+                    <div className="relative z-10 space-y-4">
+                      <div>
+                        <h3 className="font-black text-white text-lg sm:text-xl flex items-start gap-2.5 drop-shadow-md leading-tight">
+                          <MapPin className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                          {theatre.name}
+                        </h3>
+                        <p className="text-sm text-slate-400 mt-1.5 pl-7.5 line-clamp-2 font-medium">
+                          {theatre.address}
+                        </p>
+                      </div>
 
-                    <div className="flex flex-wrap gap-1.5 pl-6">
-                      {theatre.facilities?.map((facility) => (
-                        <span 
-                          key={facility} 
-                          className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800/50 text-[10px] text-slate-550 dark:text-slate-400 font-bold border border-slate-200/20 dark:border-slate-700/20"
+                      <div className="flex flex-wrap gap-2 pl-7.5 pt-2">
+                        {theatre.facilities?.map((facility) => (
+                          <span 
+                            key={facility} 
+                            className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-[10px] sm:text-xs text-slate-300 font-bold tracking-wide shadow-inner backdrop-blur-sm group-hover:border-white/20 transition-colors duration-300"
+                          >
+                            {facility}
+                          </span>
+                        ))}
+                      </div>
+
+                      {/* Available Shows Button */}
+                      <div className="pt-3">
+                        <button 
+                          onClick={() => handleViewShows(theatre)}
+                          className="w-full py-2.5 bg-primary/10 hover:bg-primary text-primary hover:text-white font-bold rounded-xl transition-colors duration-300 text-sm shadow-sm cursor-pointer"
                         >
-                          {facility}
-                        </span>
-                      ))}
+                          Available Shows
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -169,6 +192,65 @@ function Home() {
       )}
 
       <Footer />
+
+      {/* Available Shows Modal */}
+      {isShowsModalOpen && selectedTheatre && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden animate-scale-up">
+            <div className="p-5 sm:p-6 border-b border-slate-800 flex justify-between items-center bg-slate-950">
+              <h3 className="text-xl font-black text-white flex items-center gap-2">
+                <Ticket className="w-5 h-5 text-primary" />
+                Shows at {selectedTheatre.name}
+              </h3>
+              <button 
+                onClick={() => setIsShowsModalOpen(false)}
+                className="text-slate-400 hover:text-white transition-colors text-xl font-bold cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="p-5 sm:p-6 overflow-y-auto flex-grow bg-slate-900/50">
+              {showsLoading ? (
+                <div className="py-12 flex justify-center"><LoadingSpinner /></div>
+              ) : theatreShows.length === 0 ? (
+                <div className="text-center py-10">
+                  <p className="text-slate-400 font-medium mb-2">No shows currently available here.</p>
+                  <p className="text-xs text-slate-500">Please check back later or try another theatre.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {theatreShows.map(show => (
+                    <div key={show._id} className="p-4 rounded-xl border border-slate-700/50 bg-slate-800/40 hover:bg-slate-800/80 transition-colors flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                      <div>
+                        <h4 className="font-bold text-white text-base sm:text-lg">{show.movie?.name || "Movie Name"}</h4>
+                        <div className="flex gap-4 text-xs sm:text-sm text-slate-400 mt-1.5 font-medium">
+                          <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> {new Date(show.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+                          <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> {show.time}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto mt-2 sm:mt-0">
+                        <span className="px-3 py-1 bg-slate-700/50 rounded-lg text-[10px] sm:text-xs font-bold text-slate-300 border border-slate-600/50">
+                          {show.format || "2D"}
+                        </span>
+                        <button 
+                          onClick={() => {
+                            setIsShowsModalOpen(false);
+                            if (show.movie?._id) navigate(`/movie/${show.movie._id}`);
+                          }}
+                          className="px-5 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg font-bold text-sm transition-colors shadow-md cursor-pointer"
+                        >
+                          Book Now
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

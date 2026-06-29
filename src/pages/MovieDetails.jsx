@@ -102,12 +102,21 @@ function MovieDetails() {
         <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-start">
           
           {/* Movie Poster Card (Overlaying) */}
-          <div className="w-36 sm:w-48 md:w-64 flex-shrink-0 mx-auto md:mx-0 rounded-2xl overflow-hidden shadow-2xl bg-slate-950 border-4 border-white dark:border-slate-900">
-            <img
-              src={movie.posterUrl}
-              alt={movie.name}
-              className="w-full object-cover aspect-[2/3]"
-            />
+          <div className="w-36 sm:w-48 md:w-64 flex-shrink-0 mx-auto md:mx-0 rounded-2xl overflow-hidden shadow-2xl bg-slate-950 border-4 border-white dark:border-slate-900 aspect-[2/3] relative flex items-center justify-center">
+            {movie.posterUrl ? (
+              <img
+                src={movie.posterUrl}
+                alt={movie.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="absolute inset-0 bg-gradient-to-br from-slate-800 via-slate-900 to-black flex flex-col items-center justify-center p-4 sm:p-6 text-center">
+                <Film className="w-10 h-10 sm:w-16 sm:h-16 text-primary/30 mb-3" />
+                <h2 className="text-lg sm:text-2xl font-black text-white drop-shadow-lg leading-tight line-clamp-4">
+                  {movie.name}
+                </h2>
+              </div>
+            )}
           </div>
 
           {/* Details Column */}
