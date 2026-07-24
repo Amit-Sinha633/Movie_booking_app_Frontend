@@ -52,7 +52,7 @@ function Admin() {
 
   // Show Form Fields
   const [showForm, setShowForm] = useState({
-    theatreId: "", movieId: "", timing: "04:30 PM", noOfSeats: 120, price: 250, format: "2D"
+    theatreId: "", movieId: "", timing: "04:30 PM", date: "", noOfSeats: 120, price: 250, format: "2D"
   });
 
   const loadData = async () => {
@@ -479,7 +479,7 @@ function Admin() {
                         setShowForm({
                           theatreId: theatres[0]?._id || "",
                           movieId: movies[0]?._id || "",
-                          timing: "04:30 PM", noOfSeats: 120, price: 250, format: "2D"
+                          timing: "04:30 PM", date: "", noOfSeats: 120, price: 250, format: "2D"
                         });
                         setShowModal(true);
                       }}
@@ -517,7 +517,7 @@ function Admin() {
                                     setShowForm({
                                       theatreId: s.theatreId,
                                       movieId: s.movieId,
-                                      timing: s.timing, noOfSeats: s.noOfSeats, price: s.price, format: s.format || "2D"
+                                      timing: s.timing, date: s.date ? s.date.split("T")[0] : "", noOfSeats: s.noOfSeats, price: s.price, format: s.format || "2D"
                                     });
                                     setShowModal(true);
                                   }}
@@ -882,12 +882,25 @@ function Admin() {
                   />
                 </div>
                 <div className="space-y-1">
+                  <label className="font-bold text-slate-400">Show Date</label>
+                  <input
+                    type="date" required value={showForm.date}
+                    onChange={(e) => setShowForm({...showForm, date: e.target.value})}
+                    className="block w-full p-2 border dark:border-slate-700/80 rounded bg-slate-50 dark:bg-slate-900"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
                   <label className="font-bold text-slate-400">Price (INR)</label>
                   <input
                     type="number" required value={showForm.price}
                     onChange={(e) => setShowForm({...showForm, price: parseInt(e.target.value) || ""})}
                     className="block w-full p-2 border dark:border-slate-700/80 rounded bg-slate-50 dark:bg-slate-900"
                   />
+                </div>
+                <div className="space-y-1">
                 </div>
               </div>
 

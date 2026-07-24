@@ -11,7 +11,7 @@ export const showService = {
 
   // Get available shows in a specific theatre
   async getShowsAvailableInTheatre(theatreId) {
-    const response = await axiosInstance.get(`/mba/api/v1/show/getShowsAvailableInTheatre/${theatreId}`);
+    const response = await axiosInstance.get(`/mba/theatre/api/v1/showPresentInTheatre/${theatreId}`);
     return response.data?.data || response.data || [];
   },
 

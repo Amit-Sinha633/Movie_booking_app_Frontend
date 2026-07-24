@@ -13,7 +13,7 @@ function MovieDetails() {
   const { startBooking } = useBooking();
   const [movie, setMovie] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showTrailer, setShowTrailer] = useState(false);
+
 
   useEffect(() => {
     const loadMovieDetails = async () => {
@@ -88,7 +88,13 @@ function MovieDetails() {
         {/* Trailer Trigger Play Overlay */}
         <div className="absolute inset-0 flex items-center justify-center z-20">
           <button
-            onClick={() => setShowTrailer(true)}
+            onClick={() => {
+              let url = movie?.trailerUrl || "https://www.youtube.com/watch?v=cbwK_3P6f38";
+              if (url.includes("/embed/")) {
+                url = url.replace("/embed/", "/watch?v=");
+              }
+              window.open(url, "_blank", "noopener,noreferrer");
+            }}
             className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary/95 text-white flex items-center justify-center hover:scale-110 transition-transform shadow-xl shadow-primary/30 border-2 border-white/20 cursor-pointer"
             title="Watch Trailer"
           >
@@ -235,28 +241,7 @@ function MovieDetails() {
         </div>
       </div>
 
-      {/* YouTube Trailer Modal */}
-      {showTrailer && (
-        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
-          <button
-            onClick={() => setShowTrailer(false)}
-            className="absolute top-6 right-6 text-white hover:text-primary font-bold text-lg cursor-pointer"
-          >
-            Close ✕
-          </button>
-          
-          <div className="w-full max-w-4xl aspect-video rounded-2xl overflow-hidden bg-black shadow-2xl border border-white/10 animate-scale-up">
-            <iframe
-              src={movie.trailerUrl.includes("embed") ? movie.trailerUrl : "https://www.youtube.com/embed/cbwK_3P6f38"}
-              title={`${movie.name} Trailer`}
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="w-full h-full"
-            ></iframe>
-          </div>
-        </div>
-      )}
+
 
       <Footer />
     </div>

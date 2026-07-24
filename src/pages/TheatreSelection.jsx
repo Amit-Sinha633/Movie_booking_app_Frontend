@@ -19,7 +19,8 @@ function TheatreSelection() {
   const [theatres, setTheatres] = useState([]);
   const [theatreShows, setTheatreShows] = useState({}); // { theatreId: [shows] }
   const [loading, setLoading] = useState(true);
-  const [selectedDateIdx, setSelectedDateIdx] = useState(0);
+  const [availableDates, setAvailableDates] = useState([]); // unique sorted YYYY-MM-DD strings from shows
+  const [selectedDateStr, setSelectedDateStr] = useState("");
 
   // Restore movie from ID if refreshed
   useEffect(() => {
@@ -56,6 +57,17 @@ function TheatreSelection() {
           })
         );
         setTheatreShows(showMap);
+
+        // Derive unique available dates from all fetched shows
+        const dateSet = new Set();
+        Object.values(showMap).forEach((shows) => {
+          shows.forEach((s) => {
+            if (s.date) dateSet.add(s.date.split("T")[0]);
+          });
+        });
+        const sortedDates = Array.from(dateSet).sort(); // ascending YYYY-MM-DD
+        setAvailableDates(sortedDates);
+        if (sortedDates.length > 0) setSelectedDateStr(sortedDates[0]);
       } catch (err) {
         console.error("Failed to load theatres or shows", err);
       } finally {
@@ -70,25 +82,20 @@ function TheatreSelection() {
     navigate(`/show/${show._id}`);
   };
 
-  // Mock Date Picker (Today, Tomorrow, Day After)
-  const getDates = () => {
-    const list = [];
+  // Helper: format a YYYY-MM-DD string into { dayName, dateNum, monthName }
+  const formatDateChip = (isoStr) => {
     const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
     const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-    for (let i = 0; i < 4; i++) {
-      const date = new Date();
-      date.setDate(date.getDate() + i);
-      list.push({
-        dayName: days[date.getDay()],
-        dateNum: date.getDate(),
-        monthName: months[date.getMonth()],
-        label: i === 0 ? "Today" : i === 1 ? "Tomorrow" : ""
-      });
-    }
-    return list;
+    // Parse as local date to avoid UTC off-by-one
+    const [y, m, d] = isoStr.split("-").map(Number);
+    const date = new Date(y, m - 1, d);
+    return {
+      dayName: days[date.getDay()],
+      dateNum: date.getDate(),
+      monthName: months[date.getMonth()],
+      isoStr,
+    };
   };
-  
-  const dates = getDates();
 
   // Helper to categorize show timings
   const getTimingCategory = (timing) => {
@@ -130,24 +137,32 @@ function TheatreSelection() {
         </div>
       </header>
 
-      {/* Date Selector bar */}
+      {/* Date Selector bar — only shows dates with actual shows */}
       <div className="w-full bg-white dark:bg-dark-card border-b border-slate-200/50 dark:border-slate-800/40 py-3 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-4 overflow-x-auto no-scrollbar">
-          {dates.map((d, idx) => (
-            <button
-              key={idx}
-              onClick={() => setSelectedDateIdx(idx)}
-              className={`flex flex-col items-center p-2.5 min-w-[70px] rounded-xl border transition-all text-xs font-bold ${
-                selectedDateIdx === idx
-                  ? "bg-primary border-primary text-white shadow-md shadow-primary/20"
-                  : "bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-slate-850 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"
-              }`}
-            >
-              <span>{d.dayName}</span>
-              <span className="text-lg font-black my-0.5">{d.dateNum}</span>
-              <span>{d.monthName}</span>
-            </button>
-          ))}
+          {availableDates.length === 0 ? (
+            <p className="text-xs text-slate-400 font-semibold py-2">No show dates available.</p>
+          ) : (
+            availableDates.map((isoStr) => {
+              const chip = formatDateChip(isoStr);
+              const isSelected = selectedDateStr === isoStr;
+              return (
+                <button
+                  key={isoStr}
+                  onClick={() => setSelectedDateStr(isoStr)}
+                  className={`flex flex-col items-center p-2.5 min-w-[70px] rounded-xl border transition-all text-xs font-bold ${
+                    isSelected
+                      ? "bg-primary border-primary text-white shadow-md shadow-primary/20"
+                      : "bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-slate-850 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"
+                  }`}
+                >
+                  <span>{chip.dayName}</span>
+                  <span className="text-lg font-black my-0.5">{chip.dateNum}</span>
+                  <span>{chip.monthName}</span>
+                </button>
+              );
+            })
+          )}
         </div>
       </div>
 
@@ -165,7 +180,13 @@ function TheatreSelection() {
           <div className="space-y-6">
             
             {theatres.map((theatre) => {
-              const shows = theatreShows[theatre._id] || [];
+            const allShows = theatreShows[theatre._id] || [];
+
+              // Filter shows to only those matching the selected date
+              const shows = allShows.filter((s) => {
+                if (!s.date) return false;
+                return s.date.split("T")[0] === selectedDateStr;
+              });
               
               // Group shows by slots
               const slots = {
@@ -215,9 +236,9 @@ function TheatreSelection() {
                   {/* Right Column: Showtime Slots Grid */}
                   <div className="flex-grow lg:w-2/3 space-y-4">
                     {shows.length === 0 ? (
-                      <p className="text-slate-400 text-xs py-4 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
-                        No shows scheduled for today.
-                      </p>
+                       <p className="text-slate-400 text-xs py-4 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
+                         No shows available for {dates[selectedDateIdx]?.dayName} {dates[selectedDateIdx]?.dateNum} {dates[selectedDateIdx]?.monthName}.
+                       </p>
                     ) : (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {Object.entries(slots).map(([slotName, slotShows]) => {

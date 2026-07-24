@@ -96,7 +96,7 @@ function BookingSuccess() {
 
             <div className="space-y-0.5">
               <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Price</p>
-              <p className="text-sm font-black text-slate-800 dark:text-white">₹{booking.totalCosts + Math.round(booking.totalCosts * 0.10) + Math.round(booking.totalCosts * 0.10 * 0.18)}</p>
+              <p className="text-sm font-black text-slate-800 dark:text-white">₹{booking.totalCosts}</p>
             </div>
 
           </div>

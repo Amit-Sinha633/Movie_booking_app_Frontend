@@ -28,12 +28,12 @@ export default defineConfig({
     chunkSizeWarningLimit: 600,
   },
   server: {
-    // Proxy all /mba/* requests from localhost:5173 → localhost:1000 (backend port from .env).
+    // Proxy all /mba/* requests from localhost:5173 → vercel backend.
     // This bypasses CORS entirely — the browser sends the httpOnly JWT cookie automatically
     // since both origin and destination appear as the same origin (localhost:5173).
     proxy: {
       '/mba': {
-        target: 'http://localhost:1000',
+        target: 'https://movie-booking-app-backend-jade.vercel.app',
         changeOrigin: true,
         secure: false,
       },

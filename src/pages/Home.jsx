@@ -8,7 +8,7 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import { useMovies } from "../contexts/MovieContext";
 import { theatreService } from "../services/theatreService";
 import { showService } from "../services/showService";
-import { Film, MapPin, Ticket, Award, Sparkles, Calendar, Clock } from "lucide-react";
+import { Film, MapPin, Ticket, Award, Sparkles, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 
@@ -223,20 +223,24 @@ function Home() {
                   {theatreShows.map(show => (
                     <div key={show._id} className="p-4 rounded-xl border border-slate-700/50 bg-slate-800/40 hover:bg-slate-800/80 transition-colors flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                       <div>
-                        <h4 className="font-bold text-white text-base sm:text-lg">{show.movie?.name || "Movie Name"}</h4>
+                        <h4 className="font-bold text-white text-base sm:text-lg flex items-center gap-2">
+                          <Film className="w-4 h-4 text-primary flex-shrink-0" />
+                          {show.movieId?.name || "Unknown Movie"}
+                        </h4>
                         <div className="flex gap-4 text-xs sm:text-sm text-slate-400 mt-1.5 font-medium">
-                          <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> {new Date(show.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</span>
-                          <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> {show.time}</span>
+                          <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> {show.timing}</span>
+                          <span className="flex items-center gap-1.5"><Ticket className="w-3.5 h-3.5 text-primary" /> {show.noOfSeats} seats left</span>
                         </div>
                       </div>
                       <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto mt-2 sm:mt-0">
-                        <span className="px-3 py-1 bg-slate-700/50 rounded-lg text-[10px] sm:text-xs font-bold text-slate-300 border border-slate-600/50">
-                          {show.format || "2D"}
+                        <span className="px-3 py-1 bg-slate-700/50 rounded-lg text-[10px] sm:text-xs font-bold text-emerald-400 border border-slate-600/50">
+                          ₹{show.price}
                         </span>
                         <button 
                           onClick={() => {
                             setIsShowsModalOpen(false);
-                            if (show.movie?._id) navigate(`/movie/${show.movie._id}`);
+                            const movieId = show.movieId?._id || show.movieId;
+                            if (movieId) navigate(`/movie/${movieId}`);
                           }}
                           className="px-5 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg font-bold text-sm transition-colors shadow-md cursor-pointer"
                         >
