@@ -8,7 +8,7 @@ import axios from "axios";
 // .env.production = "https://movie-booking-app-backend-jade.vercel.app"
 // so all API calls are sent directly to the deployed Vercel backend.
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "",  // "" in dev (proxy), Vercel URL in prod
+  baseURL: import.meta.env.PROD ? "https://movie-booking-app-backend-jade.vercel.app" : "",  // force correct live URL in production
   withCredentials: true,  // always send cookies (httpOnly JWT) — required for cross-origin auth
   headers: {
     "Content-Type": "application/json",
