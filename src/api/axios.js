@@ -1,6 +1,5 @@
 import axios from "axios";
-import dotenv from "dotenv"
-dotenv.config()
+
 // VITE_API_URL is set to "" in .env.development → the Vite dev-server proxy
 // intercepts every /mba/* request and tunnels it to localhost:1000 (backend),
 // so local development works exactly as before.
@@ -9,7 +8,7 @@ dotenv.config()
 // .env.production = "https://movie-booking-app-backend-jade.vercel.app"
 // so all API calls are sent directly to the deployed Vercel backend.
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:1000" || process.env.production.VITE_API_URL,  // "" in dev (proxy), Vercel URL in prod
+  baseURL: "http://localhost:1000" || process.meta.env.production.VITE_API_URL,  // "" in dev (proxy), Vercel URL in prod
   withCredentials: true,  // always send cookies (httpOnly JWT) — required for cross-origin auth
   headers: {
     "Content-Type": "application/json",
