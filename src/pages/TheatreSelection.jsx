@@ -168,11 +168,11 @@ function TheatreSelection() {
 
       {/* Main Theatres list */}
       <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-        {theatres.length === 0 ? (
+        {theatres.length === 0 || availableDates.length === 0 ? (
           <div className="text-center py-16 bg-white dark:bg-dark-card rounded-2xl p-8 border border-slate-250/50 dark:border-slate-850">
-            <p className="text-slate-500 font-bold">No theatres currently scheduled for this movie.</p>
-            <p className="text-xs text-slate-400 mt-1">Try changing your location/city from the navigation bar.</p>
-            <button onClick={() => navigate("/")} className="mt-6 px-5 py-2.5 bg-primary text-white rounded-lg font-bold text-sm shadow-md shadow-primary/10">
+            <p className="text-slate-500 font-bold">No shows found for this movie.</p>
+            <p className="text-xs text-slate-400 mt-1">Try changing your location/city from the navigation bar or explore other movies.</p>
+            <button onClick={() => navigate("/")} className="mt-6 px-5 py-2.5 bg-primary text-white rounded-lg font-bold text-sm shadow-md shadow-primary/10 hover:bg-primary/90 transition-colors">
               Return to Home
             </button>
           </div>
@@ -237,7 +237,7 @@ function TheatreSelection() {
                   <div className="flex-grow lg:w-2/3 space-y-4">
                     {shows.length === 0 ? (
                        <p className="text-slate-400 text-xs py-4 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
-                         No shows available for {dates[selectedDateIdx]?.dayName} {dates[selectedDateIdx]?.dateNum} {dates[selectedDateIdx]?.monthName}.
+                         No shows available for {selectedDateStr ? `${formatDateChip(selectedDateStr).dayName} ${formatDateChip(selectedDateStr).dateNum} ${formatDateChip(selectedDateStr).monthName}` : "the selected date"}.
                        </p>
                     ) : (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
