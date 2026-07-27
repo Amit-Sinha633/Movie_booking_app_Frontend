@@ -81,12 +81,21 @@ function ClientDashboard() {
   // CRUD Movie
   const handleMovieSubmit = async (e) => {
     e.preventDefault();
+
+    // Format casts into an array
+    const formattedForm = {
+      ...movieForm,
+      casts: typeof movieForm.casts === "string" 
+        ? movieForm.casts.split(",").map(c => c.trim()).filter(Boolean) 
+        : movieForm.casts
+    };
+
     try {
       if (editItem) {
-        await movieService.updateMovie(editItem._id, movieForm);
+        await movieService.updateMovie(editItem._id, formattedForm);
         toast.success("Movie updated successfully!");
       } else {
-        await movieService.createMovie(movieForm);
+        await movieService.createMovie(formattedForm);
         toast.success("Movie created successfully!");
       }
       setMovieModal(false);
