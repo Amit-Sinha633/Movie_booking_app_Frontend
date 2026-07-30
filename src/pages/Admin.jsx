@@ -184,7 +184,7 @@ function Admin() {
       setEditItem(null);
       loadData();
     } catch (err) {
-      const errorMsg = err.response?.data?.msg || err.response?.data?.err || "Failed to record show times.";
+      const errorMsg = err?.msg || err?.err || err?.message || "Failed to record show times.";
       toast.error(errorMsg);
     }
   };
