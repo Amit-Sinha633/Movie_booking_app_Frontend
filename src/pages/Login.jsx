@@ -103,35 +103,7 @@ function Login() {
           </button>
         </form>
 
-        {/* Social Authentication */}
-        <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-          <div className="relative flex justify-center text-xs">
-            <span className="bg-white dark:bg-dark-card px-3 text-slate-400 uppercase tracking-wider font-semibold">
-              Or Sign In With
-            </span>
-          </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={() => alert("Social Sign-in is coming soon!")}
-              className="flex items-center justify-center gap-2 py-2 px-3 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-            >
-              <svg className="h-4 w-4 text-rose-500 fill-current" viewBox="0 0 24 24">
-                <path d="M12.24 10.285V13.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.859-3.579-7.859-8s3.53-8 7.859-8c2.46 0 4.105 1.025 5.047 1.926l2.427-2.334C17.955 2.192 15.34 1 12.24 1 6.033 1 1 6.033 1 12.24s5.033 11.24 11.24 11.24c6.478 0 10.793-4.537 10.793-10.986 0-.746-.08-1.32-.176-1.887h-10.62z"/>
-              </svg>
-              Google
-            </button>
-            <button
-              onClick={() => alert("Social Sign-in is coming soon!")}
-              className="flex items-center justify-center gap-2 py-2 px-3 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-            >
-              <svg className="h-4 w-4 text-blue-600 fill-current" viewBox="0 0 24 24">
-                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-              </svg>
-              Facebook
-            </button>
-          </div>
-        </div>
 
         {/* Footer Redirect */}
         <p className="text-center text-sm text-slate-500">
