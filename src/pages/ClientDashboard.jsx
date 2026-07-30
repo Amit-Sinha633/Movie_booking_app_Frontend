@@ -166,7 +166,8 @@ function ClientDashboard() {
       setEditItem(null);
       loadData();
     } catch (err) {
-      toast.error("Failed to record show times.");
+      const errorMsg = err.response?.data?.msg || err.response?.data?.err || "Failed to record show times.";
+      toast.error(errorMsg);
     }
   };
 
