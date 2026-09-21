@@ -7,7 +7,7 @@ export const MovieProvider = ({ children }) => {
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedCity, setSelectedCity] = useState("Kolkata");
+  const [selectedCity, setSelectedCity] = useState("kolkata");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterGenre, setFilterGenre] = useState("");
   const [filterLanguage, setFilterLanguage] = useState("");
