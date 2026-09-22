@@ -804,26 +804,7 @@ function Admin() {
                 />
               </div>
 
-              <div className="space-y-1 mt-2">
-                <label className="font-bold text-slate-400">Movies Available</label>
-                <div className="max-h-32 overflow-y-auto border dark:border-slate-700/80 rounded p-2 bg-slate-50 dark:bg-slate-900 grid grid-cols-2 gap-2">
-                  {movies.map(m => (
-                    <label key={m._id} className="flex items-center space-x-2 text-xs">
-                      <input 
-                        type="checkbox" 
-                        checked={theatreForm.movies.includes(m._id)}
-                        onChange={(e) => {
-                          const newMovies = e.target.checked 
-                            ? [...theatreForm.movies, m._id] 
-                            : theatreForm.movies.filter(id => id !== m._id);
-                          setTheatreForm({...theatreForm, movies: newMovies});
-                        }}
-                      />
-                      <span className="truncate">{m.name || m.title}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
+
 
               <div className="flex gap-3 pt-2">
                 <button
