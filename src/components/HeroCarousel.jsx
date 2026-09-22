@@ -135,7 +135,7 @@ function HeroCarousel() {
   const backgroundImageUrl = currentMovie.backdropUrl || currentMovie.posterUrl || currentMovie.imageUrl;
 
   return (
-    <div className="relative w-full h-[400px] md:h-[550px] overflow-hidden bg-slate-950">
+    <div className="relative w-full h-[400px] md:h-[450px] overflow-hidden bg-slate-950">
       
       {/* Slides */}
       <AnimatePresence mode="wait">
