@@ -33,7 +33,7 @@ function Payment() {
         const data = await bookingService.getBooking(bookingId);
         setBooking(data);
       } catch (err) {
-        toast.error("Failed to load booking information.");
+        toast.error(err?.err || err?.msg || err?.message || "Failed to load booking information.");
         navigate("/");
       } finally {
         setLoading(false);
@@ -59,7 +59,7 @@ function Payment() {
       setPaying(false);
       setShowSuccessModal(true);
     } catch (err) {
-      toast.error("Payment failed. Please check balance or try another method.");
+      toast.error(err?.err || err?.msg || err?.message || "Payment failed. Please check balance or try another method.");
       setPaying(false);
     }
   };

@@ -107,7 +107,7 @@ function SeatSelection() {
       toast.success("Tickets locked! Proceeding to payment...");
       navigate(`/payment/${booking._id}`, { state: { booking, finalAmount: subtotal } });
     } catch (err) {
-      toast.error("Failed to reserve tickets. Please try again.");
+      toast.error(err?.err || err?.msg || err?.message || "Failed to reserve tickets. Please try again.");
       console.error(err);
     } finally {
       setBookingLoading(false);

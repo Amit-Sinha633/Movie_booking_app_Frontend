@@ -103,7 +103,7 @@ function Admin() {
       setEditItem(null);
       loadData();
     } catch (err) {
-      toast.error("Failed to submit movie details.");
+      toast.error(err?.err || err?.msg || err?.message || "Failed to submit movie details.");
     }
   };
 
@@ -119,7 +119,7 @@ function Admin() {
       toast.success("Movie deleted!");
       loadData();
     } catch (err) {
-      toast.error("Delete operation failed.");
+      toast.error(err?.err || err?.msg || err?.message || "Delete operation failed.");
     } finally {
       setDeleteMovieModal(false);
       setMovieToDelete(null);
@@ -142,7 +142,7 @@ function Admin() {
       setEditItem(null);
       loadData();
     } catch (err) {
-      toast.error("Failed to save theatre.");
+      toast.error(err?.err || err?.msg || err?.message || "Failed to save theatre.");
     }
   };
 
@@ -158,7 +158,7 @@ function Admin() {
       toast.success("Theatre deleted!");
       loadData();
     } catch (err) {
-      toast.error("Delete operation failed.");
+      toast.error(err?.err || err?.msg || err?.message || "Delete operation failed.");
     } finally {
       setDeleteTheatreModal(false);
       setTheatreToDelete(null);
@@ -184,7 +184,7 @@ function Admin() {
       setEditItem(null);
       loadData();
     } catch (err) {
-      const errorMsg = err?.msg || err?.err || err?.message || "Failed to record show times.";
+      const errorMsg = err?.err || err?.msg || err?.message || "Failed to record show times.";
       toast.error(errorMsg);
     }
   };
@@ -201,7 +201,7 @@ function Admin() {
       toast.success("Show deleted!");
       loadData();
     } catch (err) {
-      toast.error("Delete operation failed.");
+      toast.error(err?.err || err?.msg || err?.message || "Delete operation failed.");
     } finally {
       setDeleteShowModal(false);
       setShowToDelete(null);
@@ -214,7 +214,7 @@ function Admin() {
       toast.success("User updated successfully!");
       loadData();
     } catch (err) {
-      toast.error("Failed to update user.");
+      toast.error(err?.err || err?.msg || err?.message || "Failed to update user.");
     }
   };
 
@@ -230,7 +230,7 @@ function Admin() {
       toast.success("User deleted!");
       loadData();
     } catch (err) {
-      toast.error("Delete operation failed.");
+      toast.error(err?.err || err?.msg || err?.message || "Delete operation failed.");
     } finally {
       setDeleteUserModal(false);
       setUserToDelete(null);

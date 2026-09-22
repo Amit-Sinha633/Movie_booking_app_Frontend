@@ -102,7 +102,7 @@ function ClientDashboard() {
       setEditItem(null);
       loadData();
     } catch (err) {
-      toast.error("Failed to submit movie details.");
+      toast.error(err?.err || err?.msg || err?.message || "Failed to submit movie details.");
     }
   };
 
@@ -113,7 +113,7 @@ function ClientDashboard() {
       toast.success("Movie deleted!");
       loadData();
     } catch (err) {
-      toast.error("Delete operation failed.");
+      toast.error(err?.err || err?.msg || err?.message || "Delete operation failed.");
     }
   };
 
@@ -132,7 +132,7 @@ function ClientDashboard() {
       setEditItem(null);
       loadData();
     } catch (err) {
-      toast.error("Failed to save theatre.");
+      toast.error(err?.err || err?.msg || err?.message || "Failed to save theatre.");
     }
   };
 
@@ -143,7 +143,7 @@ function ClientDashboard() {
       toast.success("Theatre deleted!");
       loadData();
     } catch (err) {
-      toast.error("Delete operation failed.");
+      toast.error(err?.err || err?.msg || err?.message || "Delete operation failed.");
     }
   };
 
@@ -166,7 +166,7 @@ function ClientDashboard() {
       setEditItem(null);
       loadData();
     } catch (err) {
-      const errorMsg = err?.msg || err?.err || err?.message || "Failed to record show times.";
+      const errorMsg = err?.err || err?.msg || err?.message || "Failed to record show times.";
       toast.error(errorMsg);
     }
   };
@@ -178,7 +178,7 @@ function ClientDashboard() {
       toast.success("Show deleted!");
       loadData();
     } catch (err) {
-      toast.error("Delete operation failed.");
+      toast.error(err?.err || err?.msg || err?.message || "Delete operation failed.");
     }
   };
 

@@ -37,7 +37,7 @@ function Profile() {
       } catch (err) {
         console.error("Failed to load profile bookings", err);
         setBookingsError(err?.message || "Failed to load booking history.");
-        toast.error("Failed to load your booking history.");
+        toast.error(err?.err || err?.msg || err?.message || "Failed to load your booking history.");
       } finally {
         setBookingsLoading(false);
       }

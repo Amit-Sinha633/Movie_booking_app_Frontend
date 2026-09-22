@@ -20,7 +20,7 @@ function BookingSummary() {
         const data = await bookingService.getBooking(bookingId);
         setBooking(data);
       } catch (err) {
-        toast.error("Failed to load booking details.");
+        toast.error(err?.err || err?.msg || err?.message || "Failed to load booking details.");
         navigate("/");
       } finally {
         setLoading(false);
